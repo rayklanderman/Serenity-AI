@@ -3,7 +3,7 @@ SerenityAI Backend Server - Hybrid Approach
 FastAPI server that demonstrates JacLang concepts while using Groq for LLM
 
 This approach:
-- Imports Jac modules (main.jac) to demonstrate JacLang + OSP Graph concepts
+- Uses design patterns inspired by JacLang OSP Graph concepts
 - Uses Groq API directly for reliable LLM responses
 - Exposes REST endpoints matching walker names
 """
@@ -17,12 +17,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-# Import jaclang to demonstrate Jac integration
-import jaclang
-
-# Load Jac module - this shows Jac/Python interop
-# jaclang automatically imports .jac files
-# import main  # Uncomment when Jac module is working
+# Note: JacLang files (main.jac, models.jac, walkers.jac, agents.jac) 
+# define the OSP graph structure and agent concepts
+# This server implements those patterns using Python/FastAPI
 
 load_dotenv()
 
