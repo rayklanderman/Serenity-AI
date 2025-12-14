@@ -62,8 +62,9 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
   };
 
   return (
-    <div className="journal-container">
-      <div className="card journal-input">
+    <div className="journal-layout">
+      {/* Left: Input Section */}
+      <div className="card journal-input-card">
         <h2>📝 Journal Entry</h2>
         {currentMood && (
           <p className="mood-indicator">
@@ -76,7 +77,7 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="How was your day? What's on your mind?"
-          rows={6}
+          rows={8}
         />
         
         <button className="primary-btn" onClick={handleSave} disabled={loading || !content.trim()}>
@@ -84,16 +85,8 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
         </button>
 
         {saveSuccess && (
-          <div className="save-success fade-in" style={{
-            marginTop: '1rem',
-            padding: '0.75rem 1rem',
-            background: 'rgba(16, 185, 129, 0.2)',
-            borderRadius: '8px',
-            border: '1px solid rgba(16, 185, 129, 0.5)',
-            color: '#10b981',
-            textAlign: 'center'
-          }}>
-            ✅ Entry saved! Check "Recent Entries" below.
+          <div className="save-success fade-in">
+            ✅ Entry saved! Check your entries on the right →
           </div>
         )}
 
@@ -110,9 +103,9 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
         )}
       </div>
 
-      {/* Recent Entries - now using shared state from App */}
-      <div className="card journal-history">
-        <h3>📚 Recent Entries ({entries.length})</h3>
+      {/* Right: Entries List */}
+      <div className="card journal-entries-card">
+        <h3>📚 Your Entries ({entries.length})</h3>
         {entries.length > 0 ? (
           <div className="entries-list">
             {entries.map((entry, i) => (
@@ -126,7 +119,7 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
                   <span className="mood-change">{getMoodChangeIcon(entry.moodChange)}</span>
                 </div>
                 <p className="entry-preview">
-                  {expandedIndex === i ? entry.content : entry.content.slice(0, 80) + (entry.content.length > 80 ? '...' : '')}
+                  {expandedIndex === i ? entry.content : entry.content.slice(0, 60) + (entry.content.length > 60 ? '...' : '')}
                 </p>
                 {expandedIndex === i && entry.aiInsight && (
                   <div className="entry-insight fade-in">
@@ -138,9 +131,11 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
             ))}
           </div>
         ) : (
-          <p style={{ color: '#888', textAlign: 'center', padding: '2rem' }}>
-            No entries yet. Start journaling to see your history here!
-          </p>
+          <div className="empty-state">
+            <span className="empty-icon">📖</span>
+            <p>No entries yet</p>
+            <p className="empty-hint">Start journaling to see your thoughts here!</p>
+          </div>
         )}
       </div>
     </div>
