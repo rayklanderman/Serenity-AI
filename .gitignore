@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+*.pyc
+.Python
+
+# Environment variables - IMPORTANT: Never commit these!
+.env
+.env.local
+.env.*.local
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+.pytest_cache/
+
+# Jac compiled
+*.jbc
+*.jir
+*.session
+*.session.*
+__jac_gen__/
+
+# Secrets and keys - NEVER COMMIT
+*.pem
+*.key
+secrets/

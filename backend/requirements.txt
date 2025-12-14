@@ -1,0 +1,7 @@
+# Backend Dependencies for SerenityAI
+jaclang>=0.5.0
+jaclang-jaseci>=0.1.0
+groq>=0.4.0
+python-dotenv>=1.0.0
+uvicorn>=0.24.0
+fastapi>=0.104.0

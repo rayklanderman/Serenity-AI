@@ -1,0 +1,13 @@
+# Render Blueprint for SerenityAI Backend
+services:
+  - type: web
+    name: serenity-ai-backend
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: jac run main.jac
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.11"
+    healthCheckPath: /health
