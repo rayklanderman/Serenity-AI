@@ -3,13 +3,50 @@ import { useJac } from '../hooks/useJac';
 import type { UserContext, Emotion } from '../types';
 import type { MoodEntry } from '../App';
 
+// Modern animated emoji components
+const AnimatedEmoji: React.FC<{ name: string; size?: number }> = ({ name, size = 48 }) => {
+  const style: React.CSSProperties = {
+    fontSize: size,
+    display: 'inline-block',
+    lineHeight: 1,
+  };
+
+  switch (name) {
+    case 'happy':
+      return <span style={{ ...style, animation: 'bounce 1s ease infinite' }}>😊</span>;
+    case 'calm':
+      return <span style={{ ...style, animation: 'float 3s ease-in-out infinite' }}>😌</span>;
+    case 'neutral':
+      return <span style={style}>😐</span>;
+    case 'anxious':
+      return <span style={{ ...style, animation: 'shake 0.5s ease infinite' }}>😰</span>;
+    case 'sad':
+      return (
+        <span style={{ ...style, position: 'relative' }}>
+          😢
+          <span style={{
+            position: 'absolute',
+            top: '100%',
+            left: '50%',
+            fontSize: size * 0.3,
+            animation: 'tearDrop 1.5s ease-in-out infinite',
+          }}>💧</span>
+        </span>
+      );
+    case 'angry':
+      return <span style={{ ...style, animation: 'pulse 0.8s ease infinite' }}>😠</span>;
+    default:
+      return <span style={style}>😊</span>;
+  }
+};
+
 const MOODS: Emotion[] = [
-  { name: 'happy', emoji: '😊', color: '#FFD700' },
-  { name: 'calm', emoji: '😌', color: '#98FB98' },
-  { name: 'neutral', emoji: '😐', color: '#B0C4DE' },
-  { name: 'anxious', emoji: '😰', color: '#FF6347' },
-  { name: 'sad', emoji: '😢', color: '#4169E1' },
-  { name: 'angry', emoji: '😠', color: '#DC143C' },
+  { name: 'happy', emoji: '😊', color: '#3b82f6' },
+  { name: 'calm', emoji: '😌', color: '#22c55e' },
+  { name: 'neutral', emoji: '😐', color: '#6b7280' },
+  { name: 'anxious', emoji: '😰', color: '#f59e0b' },
+  { name: 'sad', emoji: '😢', color: '#3b82f6' },
+  { name: 'angry', emoji: '😠', color: '#ef4444' },
 ];
 
 interface MoodWheelProps {
@@ -56,7 +93,6 @@ const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMood
     return new Intl.DateTimeFormat('en', { hour: 'numeric', minute: '2-digit' }).format(date);
   };
 
-  // Check if AI response mentions journaling
   const shouldShowJournalButton = data?.response && 
     (data.response.toLowerCase().includes('journal') || 
      data.response.toLowerCase().includes('write') ||
@@ -77,7 +113,7 @@ const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMood
               onClick={() => handleMoodClick(mood)}
               style={{ borderColor: selectedMood?.name === mood.name ? mood.color : 'transparent' }}
             >
-              <span className="emoji">{mood.emoji}</span>
+              <AnimatedEmoji name={mood.name} size={36} />
               <span className="mood-label">{mood.name}</span>
             </button>
           ))}
@@ -95,18 +131,18 @@ const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMood
           onClick={handleLog} 
           disabled={!selectedMood || loading}
         >
-          {loading ? '✨ Processing...' : '💜 Log Mood'}
+          {loading ? '✨ Processing...' : '📝 Log Mood'}
         </button>
 
         {/* Mood History Strip */}
         {moodHistory.length > 0 && (
           <div className="mood-history">
-            <h3>Today's Check-ins <span className="click-hint">(click for details)</span></h3>
+            <h3>Today's Check-ins</h3>
             <div className="history-strip">
               {moodHistory.slice(0, 8).map((entry, i) => (
                 <div 
                   key={i} 
-                  className="history-item clickable"
+                  className="history-item"
                   style={{ borderColor: entry.emotion.color }}
                   onClick={() => setSelectedEntry(entry)}
                 >
@@ -140,7 +176,6 @@ const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMood
               </div>
             )}
 
-            {/* Journal Button if AI recommends journaling */}
             {shouldShowJournalButton && onNavigateToJournal && (
               <button 
                 className="journal-redirect-btn"
@@ -152,7 +187,7 @@ const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMood
           </div>
         ) : (
           <div className="ai-placeholder">
-            <div className="placeholder-icon">💜</div>
+            <div className="placeholder-icon">💬</div>
             <p>Log a mood to receive personalized support</p>
             <p className="placeholder-hint">Your AI companion is here to help!</p>
           </div>
@@ -168,8 +203,8 @@ const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMood
             style={{ borderColor: selectedEntry.emotion.color }}
           >
             <button className="modal-close" onClick={() => setSelectedEntry(null)}>×</button>
-            <div className="modal-header" style={{ background: `linear-gradient(135deg, ${selectedEntry.emotion.color}30, transparent)` }}>
-              <span className="modal-emoji">{selectedEntry.emotion.emoji}</span>
+            <div className="modal-header" style={{ background: `linear-gradient(135deg, ${selectedEntry.emotion.color}20, transparent)` }}>
+              <AnimatedEmoji name={selectedEntry.emotion.name} size={48} />
               <div>
                 <h3 style={{ margin: 0, textTransform: 'capitalize' }}>{selectedEntry.emotion.name}</h3>
                 <p className="modal-time">{selectedEntry.timestamp.toLocaleString()}</p>
