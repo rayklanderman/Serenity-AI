@@ -21,6 +21,18 @@
 
 ---
 
+## 🔧 Hybrid Architecture Approach
+
+SerenityAI uses a **hybrid architecture** that combines:
+
+1. **JacLang/OSP Concepts** - The `.jac` files define the graph structure, nodes, edges, walkers, and byLLM agent patterns
+2. **FastAPI Backend** - Implements those patterns reliably with direct Groq LLM calls
+3. **React Frontend** - Modern TypeScript UI with glass-morphism design
+
+This approach demonstrates JacLang concepts while ensuring reliable demo performance.
+
+---
+
 ## ✨ Features
 
 | Feature                 | Description                                      |
@@ -29,39 +41,70 @@
 | **Mood-Aligned Tips**   | Tips personalized to your current mood           |
 | **Mind Coach**          | Productivity coaching (breaks, hydration, sleep) |
 | **Pattern Analysis**    | Weekly emotional trends with charts              |
-| **Smart Journal**       | Side-by-side entries with AI insights            |
+| **Smart Journal**       | Side-by-side layout with AI insights             |
 | **Breathing Exercises** | Personalized stress relief exercises             |
-| **Mood History**        | Click to view past mood details                  |
-| **About Section**       | Learn app benefits                               |
-
----
-
-## 🏗️ Architecture
-
-```
-Frontend (React + TypeScript)     Backend (FastAPI + JacLang)
-         │                                 │
-         ├─ MoodWheel.tsx ──────────► /walker/MoodLogger
-         ├─ TipsPanel.tsx ──────────► /walker/SuggestionGenerator
-         ├─ TipsPanel.tsx ──────────► /walker/MindCoach
-         ├─ JournalEntry.tsx ───────► /walker/JournalSaver
-         └─ InsightsTimeline.tsx ───► /walker/TrendAnalyzer
-                                           │
-                                     6 byLLM Agents → Groq API
-```
+| **About Section**       | Learn how the app helps you                      |
 
 ---
 
 ## 🤖 6 byLLM Agents
 
-| Agent                         | Type       | Purpose           |
-| ----------------------------- | ---------- | ----------------- |
-| `empathy_response()`          | Generative | Warm responses    |
-| `classify_mood()`             | Analytical | Emotion detection |
-| `detect_patterns()`           | Analytical | Trend analysis    |
-| `generate_prompt()`           | Generative | Journal prompts   |
-| `create_breathing_exercise()` | Generative | Stress relief     |
-| `mind_coach()`                | Generative | Productivity tips |
+| Agent                         | Type       | Purpose                                            |
+| ----------------------------- | ---------- | -------------------------------------------------- |
+| `empathy_response()`          | Generative | Warm, supportive responses based on user's emotion |
+| `classify_mood()`             | Analytical | Detects emotion, intensity, triggers from text     |
+| `detect_patterns()`           | Analytical | Finds recurring emotions and weekly trends         |
+| `generate_prompt()`           | Generative | Creates thoughtful journaling prompts              |
+| `create_breathing_exercise()` | Generative | Builds stress-relief breathing routines            |
+| `mind_coach()`                | Generative | Productivity tips that respect mental state        |
+
+---
+
+## 📊 OSP Graph Schema
+
+**Nodes (6 types):**
+
+- `Emotion` - Mood data with intensity, color, timestamp
+- `Suggestion` - AI-generated tips and prompts
+- `JournalEntry` - User writings with AI insights
+- `User` - User profile and preferences
+- `Trigger` - Events that affect mood
+- `Activity` - Recommended activities
+
+**Edges (6 types):**
+
+- `triggers` → connects emotions to triggers
+- `helps_with` → links suggestions to emotions
+- `influences` → shows mood impact relationships
+- `correlates_with` → pattern connections
+- `contains` → user contains entries
+- `logged_by` → entries logged by user
+
+---
+
+## 🏗️ Architecture Diagram
+
+```
+┌─────────────────────┐     ┌─────────────────────┐
+│   React Frontend    │────▶│  FastAPI Backend    │
+│   (TypeScript)      │     │  (Hybrid Approach)  │
+│   Vercel Hosted     │     │  Render Hosted      │
+└─────────────────────┘     └─────────────────────┘
+                                     │
+                        ┌────────────┴────────────┐
+                        │                         │
+                   JacLang Files           6 byLLM Agents
+                   (OSP Schema)            (Groq LLM Calls)
+                        │                         │
+                  ┌─────┴─────┐           ┌───────┴───────┐
+                  │main.jac   │           │empathy_resp() │
+                  │models.jac │           │classify_mood()│
+                  │walkers.jac│           │detect_pattern │
+                  │agents.jac │           │generate_prompt│
+                  └───────────┘           │create_breath()│
+                                          │mind_coach()   │
+                                          └───────────────┘
+```
 
 ---
 
@@ -95,16 +138,16 @@ npm run dev
 ```
 serenity-ai/
 ├── backend/
-│   ├── server.py         # FastAPI + byLLM agents
+│   ├── server.py         # FastAPI + 6 byLLM agents
 │   ├── main.jac          # OSP Graph + Walkers
 │   ├── models.jac        # Node/Edge definitions
-│   ├── agents.jac        # byLLM declarations
+│   ├── agents.jac        # byLLM agent declarations
 │   └── walkers.jac       # Walker implementations
 ├── frontend/
 │   └── src/
 │       ├── components/   # React components
 │       ├── hooks/        # useJac API hook
-│       └── styles/       # Premium CSS
+│       └── styles/       # Premium UI CSS
 └── docs/
     ├── PROJECT.md        # Full documentation
     └── DEPLOY.md         # Deployment guide
