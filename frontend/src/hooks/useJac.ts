@@ -92,6 +92,13 @@ export const useJac = <T extends WalkerName>(walkerName: T): UseJacReturn<T> => 
           entry_id: String(Date.now()),
           mood_change: 0,
           response: "Thank you for sharing your thoughts."
+        },
+        'MindCoach': {
+          productivity_tips: [
+            { type: "general", icon: "✨", title: "Stay Focused", message: "You're doing great! Keep up the good work." }
+          ],
+          mental_check: "I see you're checking in. That's a great habit!",
+          time_greeting: "Good day!"
         }
       };
       

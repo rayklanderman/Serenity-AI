@@ -19,7 +19,6 @@ const TipsPanel: React.FC<TipsPanelProps> = ({ userContext, currentMood }) => {
   const { spawn: spawnSuggestion, data: suggestionData, loading: suggestionLoading } = useJac('SuggestionGenerator');
   const { spawn: spawnCoach, data: coachData, loading: coachLoading } = useJac('MindCoach');
 
-  // Get current hour for time-based tips
   const currentHour = new Date().getHours();
   const getTimeGreeting = () => {
     if (currentHour < 12) return 'Good morning';
@@ -27,7 +26,6 @@ const TipsPanel: React.FC<TipsPanelProps> = ({ userContext, currentMood }) => {
     return 'Good evening';
   };
 
-  // Auto-fetch when mood changes
   useEffect(() => {
     if (mode === 'mindfulness') {
       handleGetTip();
@@ -51,13 +49,12 @@ const TipsPanel: React.FC<TipsPanelProps> = ({ userContext, currentMood }) => {
       user_id: userContext.userId,
       current_mood: currentMood?.name || "neutral",
       current_hour: currentHour,
-      last_break_minutes: 60, // Could track this in real app
+      last_break_minutes: 60,
       is_working: true
     });
   };
 
   const loading = mode === 'mindfulness' ? suggestionLoading : coachLoading;
-  const data = mode === 'mindfulness' ? suggestionData : coachData;
 
   const getMoodEmoji = () => {
     if (!currentMood) return '✨';
@@ -66,7 +63,6 @@ const TipsPanel: React.FC<TipsPanelProps> = ({ userContext, currentMood }) => {
 
   return (
     <div className="card tips-panel">
-      {/* Mode Toggle */}
       <div className="coach-toggle">
         <button 
           className={`coach-btn ${mode === 'mindfulness' ? 'active' : ''}`}
@@ -84,7 +80,6 @@ const TipsPanel: React.FC<TipsPanelProps> = ({ userContext, currentMood }) => {
 
       <h2>{getMoodEmoji()} {mode === 'mindfulness' ? 'Mindfulness Moment' : 'Productivity Coach'}</h2>
       
-      {/* Time greeting for coach mode */}
       {mode === 'coach' && (
         <p className="time-greeting">{getTimeGreeting()}, <span>let's stay focused!</span></p>
       )}
@@ -107,50 +102,51 @@ const TipsPanel: React.FC<TipsPanelProps> = ({ userContext, currentMood }) => {
         {loading ? '🔄 Loading...' : mode === 'mindfulness' ? '🔄 New Tip' : '🔄 New Coaching'}
       </button>
       
-      {data ? (
+      {/* Mindfulness Mode Content */}
+      {mode === 'mindfulness' && suggestionData && (
         <div className="tip-content fade-in">
-          {/* Mindfulness Mode Content */}
-          {mode === 'mindfulness' && data.prompt && (
-            <>
-              <blockquote>{data.prompt}</blockquote>
-              {data.exercise && (
-                <div className="exercise-box">
-                  <h4>🫁 {data.exercise.name || 'Breathing Exercise'}</h4>
-                  <p className="duration">⏱️ {data.exercise.duration_seconds}s</p>
-                  {data.exercise.steps && (
-                    <ol className="exercise-steps">
-                      {data.exercise.steps.map((step: string, i: number) => (
-                        <li key={i}>{step}</li>
-                      ))}
-                    </ol>
-                  )}
-                  {data.exercise.benefits && (
-                    <p className="benefits">💚 {data.exercise.benefits}</p>
-                  )}
-                </div>
-              )}
-            </>
+          {suggestionData.prompt && (
+            <blockquote>{suggestionData.prompt}</blockquote>
           )}
-
-          {/* Coach Mode Content */}
-          {mode === 'coach' && data.productivity_tips && (
-            <>
-              {data.mental_check && (
-                <p className="mood-context">{data.mental_check}</p>
+          {suggestionData.exercise && (
+            <div className="exercise-box">
+              <h4>🫁 {suggestionData.exercise.name || 'Breathing Exercise'}</h4>
+              <p className="duration">⏱️ {suggestionData.exercise.duration_seconds}s</p>
+              {suggestionData.exercise.steps && (
+                <ol className="exercise-steps">
+                  {suggestionData.exercise.steps.map((step: string, i: number) => (
+                    <li key={i}>{step}</li>
+                  ))}
+                </ol>
               )}
-              {data.productivity_tips.map((tip: ProductivityTip, i: number) => (
-                <div key={i} className="productivity-tip">
-                  <h4>
-                    <span className="tip-icon">{tip.icon}</span>
-                    {tip.title}
-                  </h4>
-                  <p>{tip.message}</p>
-                </div>
-              ))}
-            </>
+              {suggestionData.exercise.benefits && (
+                <p className="benefits">💚 {suggestionData.exercise.benefits}</p>
+              )}
+            </div>
           )}
         </div>
-      ) : (
+      )}
+
+      {/* Coach Mode Content */}
+      {mode === 'coach' && coachData && (
+        <div className="tip-content fade-in">
+          {coachData.mental_check && (
+            <p className="mood-context">{coachData.mental_check}</p>
+          )}
+          {coachData.productivity_tips && coachData.productivity_tips.map((tip: ProductivityTip, i: number) => (
+            <div key={i} className="productivity-tip">
+              <h4>
+                <span className="tip-icon">{tip.icon}</span>
+                {tip.title}
+              </h4>
+              <p>{tip.message}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* No data placeholder */}
+      {((mode === 'mindfulness' && !suggestionData) || (mode === 'coach' && !coachData)) && !loading && (
         <p className="placeholder-text">
           {mode === 'mindfulness' 
             ? (currentMood ? `Getting personalized ${currentMood.name} tips...` : 'Select a mood or click for uplifting suggestions')
