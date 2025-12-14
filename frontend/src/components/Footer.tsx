@@ -13,7 +13,7 @@ const Footer: React.FC = () => {
           <a href="https://github.com/rayklanderman/Serenity-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
         </div>
         <p className="footer-copy">
-          Built for Jaseci AI Hackathon 2025 | MindMate Track
+          SerenityAI © 2025
         </p>
       </div>
     </footer>
