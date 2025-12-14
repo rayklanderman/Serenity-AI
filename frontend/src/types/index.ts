@@ -20,6 +20,11 @@ export interface MoodAnalysis {
 export interface MoodLoggerResponse {
   analysis: MoodAnalysis;
   response: string;
+  emotion?: {
+    name: string;
+    intensity: number;
+    color: string;
+  };
 }
 
 export interface TrendPatterns {

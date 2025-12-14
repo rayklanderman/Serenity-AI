@@ -38,6 +38,10 @@ const App: React.FC = () => {
     setJournalEntries((prev) => [entry, ...prev].slice(0, 50));
   };
 
+  const navigateToJournal = () => {
+    setActiveTab("journal");
+  };
+
   return (
     <div className="app-wrapper">
       <div className="app-container">
@@ -76,12 +80,13 @@ const App: React.FC = () => {
 
         <main className="app-content">
           {activeTab === "log" && (
-            <div className="dashboard-grid">
+            <div className="checkin-layout">
               <MoodWheel
                 userContext={userContext}
                 onMoodSelect={setSelectedMood}
                 onMoodLogged={handleMoodLogged}
                 moodHistory={moodHistory}
+                onNavigateToJournal={navigateToJournal}
               />
               <TipsPanel userContext={userContext} currentMood={selectedMood} />
             </div>
