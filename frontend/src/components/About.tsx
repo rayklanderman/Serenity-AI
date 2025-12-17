@@ -11,7 +11,7 @@ const About: React.FC = () => {
   ];
 
   return (
-    <section className="about-section" id="about">
+    <section className="about-section" id="about" style={{ marginBottom: 'var(--space-10)' }}>
       <h2>✨ How SerenityAI Helps You</h2>
       <p className="about-intro">
         Your personal AI companion for mental wellness and productivity
