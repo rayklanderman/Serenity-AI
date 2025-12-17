@@ -65,12 +65,12 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
   };
 
   return (
-    <div className="journal-page">
-      {/* Journal Input Section */}
+    <div className="journal-layout">
+      {/* LEFT SIDE: Input Section */}
       <motion.div 
         className="card journal-input-card"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
+        initial={{ x: -20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
       >
         <h2>📝 Journal Entry</h2>
@@ -85,7 +85,7 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="How was your day? What's on your mind?"
-          rows={6}
+          rows={10}
         />
         
         <button className="primary-btn" onClick={handleSave} disabled={loading || !content.trim()}>
@@ -98,64 +98,65 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            ✅ Entry saved successfully!
+            ✅ Entry saved! Check the AI insight on the right →
           </motion.div>
         )}
       </motion.div>
 
-      {/* AI Insight - Appears ABOVE entries after saving */}
-      <AnimatePresence>
-        {(latestInsight || data?.response) && (
-          <motion.div 
-            className="card ai-insight-card"
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20 }}
-            style={{
-              background: 'linear-gradient(135deg, rgba(129, 140, 248, 0.15) 0%, rgba(167, 139, 250, 0.1) 100%)',
-              borderLeft: '4px solid var(--primary)',
-              marginTop: 'var(--space-4)'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-4)' }}>
-              <div className="ai-avatar-large" style={{ width: 48, height: 48, fontSize: '1.5rem', flexShrink: 0 }}>🧘</div>
-              <div style={{ flex: 1 }}>
-                <h3 style={{ margin: '0 0 var(--space-2) 0', color: 'var(--primary)', fontSize: '1rem' }}>
-                  ✨ AI Insight
-                </h3>
-                <p className="ai-message" style={{ margin: 0, lineHeight: 1.7 }}>
-                  {latestInsight || data?.response}
-                </p>
-              </div>
-            </div>
-            <button 
-              onClick={() => setLatestInsight(null)}
-              style={{
-                position: 'absolute',
-                top: 'var(--space-3)',
-                right: 'var(--space-3)',
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--gray-500)',
-                cursor: 'pointer',
-                fontSize: '1.2rem'
-              }}
-            >
-              ×
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Entries List */}
+      {/* RIGHT SIDE: AI Insight + Entries List */}
       <motion.div 
         className="card journal-entries-card"
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
+        initial={{ x: 20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
-        style={{ marginTop: 'var(--space-4)' }}
       >
+        {/* AI Insight - Appears at TOP of right column after saving */}
+        <AnimatePresence>
+          {(latestInsight || data?.response) && (
+            <motion.div 
+              className="ai-insight-banner"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              style={{
+                background: 'linear-gradient(135deg, rgba(129, 140, 248, 0.15) 0%, rgba(167, 139, 250, 0.1) 100%)',
+                borderLeft: '4px solid var(--primary)',
+                borderRadius: 'var(--radius-md)',
+                padding: 'var(--space-4)',
+                marginBottom: 'var(--space-4)',
+                position: 'relative'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
+                <span style={{ fontSize: '1.5rem' }}>🧘</span>
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ margin: '0 0 var(--space-2) 0', color: 'var(--primary)', fontSize: '0.9rem' }}>
+                    ✨ AI Insight
+                  </h4>
+                  <p style={{ margin: 0, lineHeight: 1.6, color: 'var(--gray-700)', fontSize: '0.95rem' }}>
+                    {latestInsight || data?.response}
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setLatestInsight(null)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'var(--gray-400)',
+                    cursor: 'pointer',
+                    fontSize: '1.2rem',
+                    padding: '0'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <h3>📚 Your Entries ({entries.length})</h3>
+        
         {entries.length > 0 ? (
           <div className="entries-list">
             {entries.map((entry, i) => (
