@@ -16,10 +16,11 @@ const AuthModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       <div className="modal-overlay" onClick={onClose}>
         <div className="auth-modal fade-in" onClick={(e) => e.stopPropagation()}>
           <button className="modal-close" onClick={onClose}>×</button>
-          <h2>🔐 Authentication</h2>
+          <h2>👤 Guest Mode Active</h2>
           <div className="auth-notice">
-            <p>Supabase is not configured. Data will be stored locally only.</p>
-            <p className="hint">To enable cloud sync, add Supabase credentials to your .env file.</p>
+            <p><strong>You're using SerenityAI as a guest!</strong></p>
+            <p>All features work, but your data is stored locally only.</p>
+            <p className="hint">Cloud sync requires Supabase configuration.</p>
           </div>
           <button className="primary-btn" onClick={onClose}>Continue as Guest</button>
         </div>
@@ -39,7 +40,7 @@ const AuthModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         onClose();
       } else {
         await signUp(email, password, displayName);
-        setSuccess('Check your email to confirm your account!');
+        setSuccess('✅ Check your email to verify your account! You\'ll be redirected back to the app.');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -55,8 +56,18 @@ const AuthModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         
         <h2>{isLogin ? '🔐 Welcome Back' : '✨ Create Account'}</h2>
         <p className="auth-subtitle">
-          {isLogin ? 'Sign in to sync your data' : 'Join SerenityAI for cloud sync'}
+          {isLogin ? 'Sign in to sync your data across devices' : 'Unlock cloud sync & personalized experience'}
         </p>
+
+        {/* Benefits for signing up */}
+        {!isLogin && (
+          <div className="auth-benefits">
+            <div className="benefit-item">✅ Cloud sync across devices</div>
+            <div className="benefit-item">✅ Persistent mood history</div>
+            <div className="benefit-item">✅ Saved journal entries</div>
+            <div className="benefit-item">✅ Personalized AI insights</div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           {!isLogin && (
@@ -114,6 +125,10 @@ const AuthModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               <button onClick={() => setIsLogin(true)}>Sign in</button>
             </>
           )}
+        </div>
+
+        <div className="auth-guest-note">
+          <p>🔓 No account needed to try the app - all features work as a guest!</p>
         </div>
       </div>
     </div>

@@ -1140,6 +1140,33 @@ textarea::placeholder {
   color: var(--text-muted);
 }
 
+/* Auth Benefits */
+.auth-benefits {
+  background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.benefit-item {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  padding: 0.3rem 0;
+}
+
+.auth-guest-note {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.auth-guest-note p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
 /* Voice Input */
 .note-input-wrapper {
   position: relative;
