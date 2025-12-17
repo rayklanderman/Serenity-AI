@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useJac } from '../hooks/useJac';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { UserContext, Emotion } from '../types';
 import type { JournalEntryData } from '../App';
 
@@ -64,7 +65,12 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
   return (
     <div className="journal-layout">
       {/* Left: Input Section */}
-      <div className="card journal-input-card">
+      <motion.div 
+        className="card journal-input-card"
+        initial={{ x: -20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ delay: 0.1 }}
+      >
         <h2>📝 Journal Entry</h2>
         {currentMood && (
           <p className="mood-indicator">
@@ -84,35 +90,54 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
           {loading ? '✨ Analyzing...' : '💾 Save Entry'}
         </button>
 
-        {saveSuccess && (
-          <div className="save-success fade-in">
-            ✅ Entry saved! Check your entries on the right →
-          </div>
-        )}
+        <AnimatePresence>
+          {saveSuccess && (
+            <motion.div 
+              className="save-success"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+            >
+              ✅ Entry saved! Check your entries on the right →
+            </motion.div>
+          )}
 
-        {data && (
-          <div className="analysis-result fade-in">
-            <div className="ai-bubble">
-              <span className="ai-icon">🤖</span>
-              <div>
-                <h4>AI Insight</h4>
-                <p className="ai-message">{data.response}</p>
+          {data && (
+            <motion.div 
+              className="analysis-result"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
+              <div className="ai-bubble">
+                <span className="ai-icon">🤖</span>
+                <div>
+                  <h4>AI Insight</h4>
+                  <p className="ai-message">{data.response}</p>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
-      </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
       {/* Right: Entries List */}
-      <div className="card journal-entries-card">
+      <motion.div 
+        className="card journal-entries-card"
+        initial={{ x: 20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ delay: 0.2 }}
+      >
         <h3>📚 Your Entries ({entries.length})</h3>
         {entries.length > 0 ? (
           <div className="entries-list">
             {entries.map((entry, i) => (
-              <div 
+              <motion.div 
                 key={i} 
                 className={`entry-item ${expandedIndex === i ? 'expanded' : ''}`}
                 onClick={() => setExpandedIndex(expandedIndex === i ? null : i)}
+                layout
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
               >
                 <div className="entry-header">
                   <span className="entry-date">{formatDate(entry.timestamp)}</span>
@@ -121,13 +146,20 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
                 <p className="entry-preview">
                   {expandedIndex === i ? entry.content : entry.content.slice(0, 60) + (entry.content.length > 60 ? '...' : '')}
                 </p>
-                {expandedIndex === i && entry.aiInsight && (
-                  <div className="entry-insight fade-in">
-                    <strong>🤖 AI Insight:</strong>
-                    <p>{entry.aiInsight}</p>
-                  </div>
-                )}
-              </div>
+                <AnimatePresence>
+                  {expandedIndex === i && entry.aiInsight && (
+                    <motion.div 
+                      className="entry-insight"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                    >
+                      <strong>🤖 AI Insight:</strong>
+                      <p>{entry.aiInsight}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             ))}
           </div>
         ) : (
@@ -137,7 +169,7 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
             <p className="empty-hint">Start journaling to see your thoughts here!</p>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 };

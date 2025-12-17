@@ -57,6 +57,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="app-wrapper">
+      <div className="aurora-background" />
       <div className="app-container">
         <header className="app-header">
           <div className="logo-container">

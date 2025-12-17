@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { motion } from 'framer-motion';
 
 const AuthModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { signIn, signUp, isConfigured } = useAuth();
@@ -12,9 +14,15 @@ const AuthModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [success, setSuccess] = useState('');
 
   if (!isConfigured) {
-    return (
-      <div className="modal-overlay" onClick={onClose}>
-        <div className="auth-modal fade-in" onClick={(e) => e.stopPropagation()}>
+    return createPortal(
+      <div className="modal-overlay" onClick={onClose} style={{ zIndex: 9999, position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <motion.div 
+          className="auth-modal" 
+          onClick={(e) => e.stopPropagation()}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+        >
           <button className="modal-close" onClick={onClose}>×</button>
           <h2>👤 Guest Mode Active</h2>
           <div className="auth-notice">
@@ -22,9 +30,10 @@ const AuthModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <p>All features work, but your data is stored locally only.</p>
             <p className="hint">Cloud sync requires Supabase configuration.</p>
           </div>
-          <button className="primary-btn" onClick={onClose}>Continue as Guest</button>
-        </div>
-      </div>
+          <button className="primary-btn" onClick={onClose} style={{ width: '100%' }}>Continue as Guest</button>
+        </motion.div>
+      </div>,
+      document.body
     );
   }
 
@@ -49,9 +58,15 @@ const AuthModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     }
   };
 
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="auth-modal fade-in" onClick={(e) => e.stopPropagation()}>
+  return createPortal(
+    <div className="modal-overlay" onClick={onClose} style={{ zIndex: 9999, position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <motion.div 
+        className="auth-modal" 
+        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+      >
         <button className="modal-close" onClick={onClose}>×</button>
         
         <h2>{isLogin ? '🔐 Welcome Back' : '✨ Create Account'}</h2>
@@ -108,7 +123,7 @@ const AuthModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           {error && <div className="auth-error">{error}</div>}
           {success && <div className="auth-success">{success}</div>}
 
-          <button type="submit" className="primary-btn" disabled={loading}>
+          <button type="submit" className="primary-btn" disabled={loading} style={{ width: '100%', marginTop: '1rem' }}>
             {loading ? 'Loading...' : isLogin ? 'Sign In' : 'Create Account'}
           </button>
         </form>
@@ -130,8 +145,9 @@ const AuthModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         <div className="auth-guest-note">
           <p>🔓 No account needed to try the app - all features work as a guest!</p>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </div>,
+    document.body
   );
 };
 

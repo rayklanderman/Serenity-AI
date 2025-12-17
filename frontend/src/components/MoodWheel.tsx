@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useJac } from '../hooks/useJac';
 import { useSpeechToText, useTextToSpeech } from '../hooks/useSpeech';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { UserContext, Emotion } from '../types';
 import type { MoodEntry } from '../App';
 
@@ -48,6 +50,21 @@ interface MoodWheelProps {
   onNavigateToJournal?: () => void;
 }
 
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
 const MoodWheel: React.FC<MoodWheelProps> = ({ 
   userContext, 
   onMoodSelect, 
@@ -92,9 +109,10 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
     
     setShowSuccess(true);
     
+    const moodText = note.trim();
     const result = await spawn({
       user_id: userContext.userId,
-      mood_text: note || `Feeling ${selectedMood.name}`,
+      mood_text: moodText || `Feeling ${selectedMood.name}`,
       emoji: selectedMood.emoji
     });
 
@@ -130,69 +148,99 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
   return (
     <div className="mood-wheel-section">
       {/* Mood Input Card */}
-      <div className="card mood-input-card">
+      <motion.div 
+        className="card mood-input-card"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+      >
         <div className="card-header">
           <h2>How are you feeling?</h2>
-          <p className="subtitle">Select your mood and add a note</p>
+          <p className="subtitle">Select your mood to begin</p>
         </div>
         
-        <div className="mood-grid">
-          {MOODS.map((mood) => (
-            <button
-              key={mood.name}
-              className={`mood-btn ${selectedMood?.name === mood.name ? 'selected' : ''}`}
-              onClick={() => handleMoodClick(mood)}
-              style={{ 
-                '--mood-color': mood.color,
-                borderColor: selectedMood?.name === mood.name ? mood.color : 'transparent'
-              } as React.CSSProperties}
-            >
-              <span className="mood-emoji">{mood.emoji}</span>
-              <span className="mood-label">{mood.name}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="note-input-wrapper">
-          <textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder={isListening ? "🎤 Listening... speak now" : "What's on your mind? (optional)"}
-            rows={3}
-            className={isListening ? 'listening' : ''}
-          />
-          {sttSupported && (
-            <button 
-              className={`voice-btn ${isListening ? 'active' : ''}`}
-              onClick={toggleVoice}
-              title={isListening ? "Stop listening" : "Speak your thoughts"}
-            >
-              {isListening ? '🔴' : '🎤'}
-            </button>
-          )}
-        </div>
-
-        <button 
-          className="primary-btn log-btn" 
-          onClick={handleLog} 
-          disabled={!selectedMood || loading}
+        <motion.div 
+          className="mood-grid"
+          variants={container}
+          initial="hidden"
+          animate="show"
         >
-          {loading ? (
-            <span className="btn-loading">
-              <span className="spinner"></span> Processing...
-            </span>
-          ) : (
-            <>
-              <span>✨</span> Log Mood
-            </>
+          {MOODS.map((mood) => (
+            <motion.div
+              key={mood.name}
+              variants={item}
+            >
+              <button
+                className={`mood-bubble ${selectedMood?.name === mood.name ? 'selected' : ''}`}
+                onClick={() => handleMoodClick(mood)}
+                style={{ 
+                  '--mood-color': mood.color,
+                  '--mood-glow': `${mood.color}40`,
+                  borderColor: selectedMood?.name === mood.name ? mood.color : 'transparent'
+                } as React.CSSProperties}
+              >
+                <span className="mood-emoji">{mood.emoji}</span>
+                <span className="mood-label">{mood.name}</span>
+              </button>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        <AnimatePresence>
+          {selectedMood && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              style={{ overflow: 'hidden' }}
+            >
+              <div className="note-input-wrapper">
+                <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder={isListening ? "🎤 Listening... speak now" : `Why are you feeling ${selectedMood.name}? (optional)`}
+                  rows={3}
+                  className={isListening ? 'listening' : ''}
+                />
+                {sttSupported && (
+                  <button 
+                    className={`voice-btn ${isListening ? 'active' : ''}`}
+                    onClick={toggleVoice}
+                    title={isListening ? "Stop listening" : "Speak your thoughts"}
+                  >
+                    {isListening ? '🔴' : '🎤'}
+                  </button>
+                )}
+              </div>
+
+              <button 
+                className="primary-btn log-btn" 
+                onClick={handleLog} 
+                disabled={loading}
+              >
+                {loading ? (
+                  <span className="btn-loading">
+                    <span className="spinner"></span> Connecting...
+                  </span>
+                ) : (
+                  <>
+                    <span>✨</span> Check In
+                  </>
+                )}
+              </button>
+            </motion.div>
           )}
-        </button>
+        </AnimatePresence>
 
         {/* Success message */}
         {showSuccess && !data && (
-          <div className="success-toast fade-in">
-            ✓ Mood logged! Getting AI response...
-          </div>
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="success-toast"
+          >
+            ✓ Mood logged! Generating insight...
+          </motion.div>
         )}
 
         {/* Mood History Strip */}
@@ -201,25 +249,39 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
             <h3>Recent Check-ins</h3>
             <div className="history-strip">
               {moodHistory.slice(0, 6).map((entry, i) => (
-                <button 
-                  key={i} 
+                <motion.button 
+                  key={i}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
                   className="history-item"
                   style={{ '--mood-color': entry.emotion.color } as React.CSSProperties}
                   onClick={() => setSelectedEntry(entry)}
                 >
                   <span className="history-emoji">{entry.emotion.emoji}</span>
                   <span className="history-time">{formatTime(entry.timestamp)}</span>
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* AI Response Modal */}
-      {showAIModal && data && (
-        <div className="modal-overlay" onClick={() => setShowAIModal(false)}>
-          <div className="ai-response-modal slide-up" onClick={(e) => e.stopPropagation()}>
+      {showAIModal && data && createPortal(
+        <motion.div 
+          className="modal-overlay" 
+          onClick={() => setShowAIModal(false)}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          style={{ zIndex: 9999, position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <motion.div 
+            className="ai-response-modal" 
+            onClick={(e) => e.stopPropagation()}
+            initial={{ scale: 0.9, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+          >
             <button className="modal-close" onClick={() => setShowAIModal(false)}>×</button>
             
             <div className="modal-header ai-modal-header">
@@ -232,6 +294,7 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
             
             <div className="modal-body">
               <div className="ai-message">
+                {/* Typewriter-like effect for text split by sentences if needed, simpler for now */}
                 <p>{data.response}</p>
               </div>
 
@@ -273,14 +336,26 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
                 </button>
               </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>,
+        document.body
       )}
 
       {/* History Detail Modal */}
-      {selectedEntry && (
-        <div className="modal-overlay" onClick={() => setSelectedEntry(null)}>
-          <div className="mood-detail-modal slide-up" onClick={(e) => e.stopPropagation()}>
+      {selectedEntry && createPortal(
+        <motion.div 
+          className="modal-overlay" 
+          onClick={() => setSelectedEntry(null)}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          style={{ zIndex: 9999, position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <motion.div 
+            className="mood-detail-modal" 
+            onClick={(e) => e.stopPropagation()}
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+          >
             <button className="modal-close" onClick={() => setSelectedEntry(null)}>×</button>
             
             <div className="modal-header" style={{ background: `linear-gradient(135deg, ${selectedEntry.emotion.color}15, transparent)` }}>
@@ -303,8 +378,9 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
                 </div>
               )}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>,
+        document.body
       )}
     </div>
   );

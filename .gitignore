@@ -34,14 +34,15 @@ Thumbs.db
 coverage/
 .pytest_cache/
 
-# Jac compiled
-*.jbc
+# Jac generated files
 *.jir
 *.session
-*.session.*
+__jac_gen__/
+
+# AI Memory (local reference only)
+.ai-memory.md
 __jac_gen__/
 
 # Secrets and keys - NEVER COMMIT
 *.pem
 *.key
-secrets/

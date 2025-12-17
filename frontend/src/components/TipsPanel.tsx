@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useJac } from '../hooks/useJac';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { UserContext, Emotion } from '../types';
 
 interface TipsPanelProps {
@@ -62,7 +63,12 @@ const TipsPanel: React.FC<TipsPanelProps> = ({ userContext, currentMood }) => {
   };
 
   return (
-    <div className="card tips-panel">
+    <motion.div 
+      className="card insight-card"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2 }}
+    >
       <div className="coach-toggle">
         <button 
           className={`coach-btn ${mode === 'mindfulness' ? 'active' : ''}`}
@@ -78,83 +84,104 @@ const TipsPanel: React.FC<TipsPanelProps> = ({ userContext, currentMood }) => {
         </button>
       </div>
 
-      <h2>{getMoodEmoji()} {mode === 'mindfulness' ? 'Mindfulness Moment' : 'Productivity Coach'}</h2>
-      
-      {mode === 'coach' && (
-        <p className="time-greeting">{getTimeGreeting()}, <span>let's stay focused!</span></p>
-      )}
-      
-      {currentMood ? (
-        <p className="mood-context">
-          {mode === 'mindfulness' ? 'Tips for when you\'re feeling' : 'Coaching while feeling'} <strong style={{ color: currentMood.color }}>{currentMood.name}</strong>
-        </p>
-      ) : (
-        <p className="mood-context positive">
-          {mode === 'mindfulness' ? '✨ Stay positive with these uplifting tips' : '✨ Ready to be productive!'}
-        </p>
-      )}
-      
-      <button 
-        className="secondary-btn" 
-        onClick={mode === 'mindfulness' ? handleGetTip : handleGetCoaching} 
-        disabled={loading}
+      <motion.div
+        key={mode}
+        initial={{ opacity: 0, x: mode === 'mindfulness' ? -10 : 10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
       >
-        {loading ? '🔄 Loading...' : mode === 'mindfulness' ? '🔄 New Tip' : '🔄 New Coaching'}
-      </button>
-      
-      {/* Mindfulness Mode Content */}
-      {mode === 'mindfulness' && suggestionData && (
-        <div className="tip-content fade-in">
-          {suggestionData.prompt && (
-            <blockquote>{suggestionData.prompt}</blockquote>
-          )}
-          {suggestionData.exercise && (
-            <div className="exercise-box">
-              <h4>🫁 {suggestionData.exercise.name || 'Breathing Exercise'}</h4>
-              <p className="duration">⏱️ {suggestionData.exercise.duration_seconds}s</p>
-              {suggestionData.exercise.steps && (
-                <ol className="exercise-steps">
-                  {suggestionData.exercise.steps.map((step: string, i: number) => (
-                    <li key={i}>{step}</li>
-                  ))}
-                </ol>
+        <h2>{getMoodEmoji()} {mode === 'mindfulness' ? 'Mindfulness Moment' : 'Productivity Coach'}</h2>
+        
+        {mode === 'coach' && (
+          <p className="time-greeting">{getTimeGreeting()}, <span>let's stay focused!</span></p>
+        )}
+        
+        {currentMood ? (
+          <p className="mood-context">
+            {mode === 'mindfulness' ? 'Tips for when you\'re feeling' : 'Coaching while feeling'} <strong style={{ color: currentMood.color }}>{currentMood.name}</strong>
+          </p>
+        ) : (
+          <p className="mood-context positive">
+            {mode === 'mindfulness' ? '✨ Stay positive with these uplifting tips' : '✨ Ready to be productive!'}
+          </p>
+        )}
+        
+        <button 
+          className="secondary-btn" 
+          onClick={mode === 'mindfulness' ? handleGetTip : handleGetCoaching} 
+          disabled={loading}
+        >
+          {loading ? '🔄 Loading...' : mode === 'mindfulness' ? '🔄 New Tip' : '🔄 New Coaching'}
+        </button>
+        
+        {/* Mindfulness Mode Content */}
+        <AnimatePresence mode='wait'>
+          {mode === 'mindfulness' && suggestionData && (
+            <motion.div 
+              className="tip-content"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              key="mindfulness-data"
+            >
+              {suggestionData.prompt && (
+                <blockquote>{suggestionData.prompt}</blockquote>
               )}
-              {suggestionData.exercise.benefits && (
-                <p className="benefits">💚 {suggestionData.exercise.benefits}</p>
+              {suggestionData.exercise && (
+                <div className="exercise-box">
+                  <h4>🫁 {suggestionData.exercise.name || 'Breathing Exercise'}</h4>
+                  <p className="duration">⏱️ {suggestionData.exercise.duration_seconds}s</p>
+                  {suggestionData.exercise.steps && (
+                    <ol className="exercise-steps">
+                      {suggestionData.exercise.steps.map((step: string, i: number) => (
+                        <li key={i}>{step}</li>
+                      ))}
+                    </ol>
+                  )}
+                  {suggestionData.exercise.benefits && (
+                    <p className="benefits">💚 {suggestionData.exercise.benefits}</p>
+                  )}
+                </div>
               )}
-            </div>
+            </motion.div>
           )}
-        </div>
-      )}
 
-      {/* Coach Mode Content */}
-      {mode === 'coach' && coachData && (
-        <div className="tip-content fade-in">
-          {coachData.mental_check && (
-            <p className="mood-context">{coachData.mental_check}</p>
+          {/* Coach Mode Content */}
+          {mode === 'coach' && coachData && (
+            <motion.div 
+              className="tip-content"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              key="coach-data"
+            >
+              {coachData.mental_check && (
+                <p className="mood-context">{coachData.mental_check}</p>
+              )}
+              {coachData.productivity_tips && coachData.productivity_tips.map((tip: ProductivityTip, i: number) => (
+                <div key={i} className="productivity-tip">
+                  <h4>
+                    <span className="tip-icon">{tip.icon}</span>
+                    {tip.title}
+                  </h4>
+                  <p>{tip.message}</p>
+                </div>
+              ))}
+            </motion.div>
           )}
-          {coachData.productivity_tips && coachData.productivity_tips.map((tip: ProductivityTip, i: number) => (
-            <div key={i} className="productivity-tip">
-              <h4>
-                <span className="tip-icon">{tip.icon}</span>
-                {tip.title}
-              </h4>
-              <p>{tip.message}</p>
-            </div>
-          ))}
-        </div>
-      )}
+        </AnimatePresence>
 
-      {/* No data placeholder */}
-      {((mode === 'mindfulness' && !suggestionData) || (mode === 'coach' && !coachData)) && !loading && (
-        <p className="placeholder-text">
-          {mode === 'mindfulness' 
-            ? (currentMood ? `Getting personalized ${currentMood.name} tips...` : 'Select a mood or click for uplifting suggestions')
-            : 'Click for productivity coaching based on your mental state'
-          }
-        </p>
-      )}
-    </div>
+        {/* No data placeholder */}
+        {((mode === 'mindfulness' && !suggestionData) || (mode === 'coach' && !coachData)) && !loading && (
+          <p className="placeholder-text">
+            {mode === 'mindfulness' 
+              ? (currentMood ? `Getting personalized ${currentMood.name} tips...` : 'Select a mood or click for uplifting suggestions')
+              : 'Click for productivity coaching based on your mental state'
+            }
+          </p>
+        )}
+      </motion.div>
+    </motion.div>
   );
 };
 

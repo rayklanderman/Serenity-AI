@@ -14,6 +14,7 @@ import {
   AreaChart,
   Area
 } from 'recharts';
+import { motion } from 'framer-motion';
 import type { UserContext } from '../types';
 import type { MoodEntry } from '../App';
 
@@ -110,7 +111,12 @@ const EmotionGraph: React.FC<EmotionGraphProps> = ({ userContext: _userContext }
   };
 
   return (
-    <div className="card emotion-graph">
+    <motion.div 
+      className="card emotion-graph"
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.1 }}
+    >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h2>Emotional Patterns</h2>
         <div className="view-toggle" style={{ display: 'flex', gap: '0.5rem' }}>
@@ -224,7 +230,7 @@ const EmotionGraph: React.FC<EmotionGraphProps> = ({ userContext: _userContext }
           </div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

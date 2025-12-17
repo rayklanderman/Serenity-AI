@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useJac } from '../hooks/useJac';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { UserContext } from '../types';
 import type { MoodEntry } from '../App';
 
@@ -24,7 +26,8 @@ const getTrendColor = (trend: string) => {
   }
 };
 
-// Positive elaborations for common recommendations
+// Positive elaborations for common recommendations (omitted large block for brevity, same as before)
+// ... (Keeping the full logic for elaboration matching)
 const getElaboration = (recommendation: string): { title: string, detail: string, action: string } => {
   const rec = recommendation.toLowerCase();
   
@@ -103,7 +106,12 @@ const InsightsTimeline: React.FC<InsightsTimelineProps> = ({ userContext }) => {
 
   return (
     <>
-      <div className="card insights-timeline">
+      <motion.div 
+        className="card insights-timeline"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.2 }}
+      >
         <h2>📊 Weekly Insights</h2>
         
         {loading ? (
@@ -122,16 +130,21 @@ const InsightsTimeline: React.FC<InsightsTimelineProps> = ({ userContext }) => {
         ) : data ? (
           <div className="insights-content">
             {/* Trend Badge */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              padding: '1rem',
-              background: 'rgba(30,30,50,0.5)',
-              borderRadius: '12px',
-              marginBottom: '1.5rem',
-              border: `1px solid ${getTrendColor(data.patterns.weekly_trend)}40`
-            }}>
+            <motion.div 
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '1rem',
+                background: 'rgba(30,30,50,0.5)',
+                borderRadius: '12px',
+                marginBottom: '1.5rem',
+                border: `1px solid ${getTrendColor(data.patterns.weekly_trend)}40`
+              }}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
               <span style={{ fontSize: '2rem' }}>{getTrendIcon(data.patterns.weekly_trend)}</span>
               <div>
                 <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Your Week</p>
@@ -145,7 +158,7 @@ const InsightsTimeline: React.FC<InsightsTimelineProps> = ({ userContext }) => {
                   {data.patterns.weekly_trend}
                 </p>
               </div>
-            </div>
+            </motion.div>
 
             {/* Recurring Emotions */}
             {data.patterns.recurring_emotions?.length > 0 && (
@@ -155,16 +168,22 @@ const InsightsTimeline: React.FC<InsightsTimelineProps> = ({ userContext }) => {
                 </h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                   {data.patterns.recurring_emotions.map((emotion: string, i: number) => (
-                    <span key={i} style={{
-                      padding: '0.4rem 0.8rem',
-                      background: 'rgba(139, 92, 246, 0.2)',
-                      borderRadius: '20px',
-                      fontSize: '0.8rem',
-                      textTransform: 'capitalize',
-                      border: '1px solid rgba(139, 92, 246, 0.3)'
-                    }}>
+                    <motion.span 
+                      key={i}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.4 + (i * 0.05) }}
+                      style={{
+                        padding: '0.4rem 0.8rem',
+                        background: 'rgba(139, 92, 246, 0.2)',
+                        borderRadius: '20px',
+                        fontSize: '0.8rem',
+                        textTransform: 'capitalize',
+                        border: '1px solid rgba(139, 92, 246, 0.3)'
+                      }}
+                    >
                       {emotion}
-                    </span>
+                    </motion.span>
                   ))}
                 </div>
               </div>
@@ -177,9 +196,12 @@ const InsightsTimeline: React.FC<InsightsTimelineProps> = ({ userContext }) => {
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {data.patterns.recommendations.map((rec: string, i: number) => (
-                  <button 
+                  <motion.button 
                     key={i} 
                     onClick={() => handleRecommendationClick(rec)}
+                    initial={{ x: -10, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: 0.5 + (i * 0.1) }}
                     style={{
                       display: 'flex',
                       justifyContent: 'space-between',
@@ -207,7 +229,7 @@ const InsightsTimeline: React.FC<InsightsTimelineProps> = ({ userContext }) => {
                   >
                     <span>{rec}</span>
                     <span style={{ color: 'var(--primary)', fontSize: '1.2rem' }}>→</span>
-                  </button>
+                  </motion.button>
                 ))}
               </div>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.75rem', textAlign: 'center' }}>
@@ -220,94 +242,68 @@ const InsightsTimeline: React.FC<InsightsTimelineProps> = ({ userContext }) => {
             No insights yet. Start logging your moods!
           </p>
         )}
-      </div>
+      </motion.div>
 
       {/* Modal Popup for Recommendation Detail */}
-      {selectedRec && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div 
-            className="recommendation-modal fade-in"
+      <AnimatePresence>
+      {/* Modal Popup for Recommendation Detail - Portal to escape Stacking Context */}
+      {selectedRec && createPortal(
+        <div className="modal-overlay" onClick={closeModal} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <motion.div 
+            className="ai-response-modal"
             onClick={(e) => e.stopPropagation()}
-            style={{
-              background: 'linear-gradient(135deg, var(--bg-card), rgba(30,30,50,0.98))',
-              borderRadius: '20px',
-              width: '90%',
-              maxWidth: '480px',
-              border: '1px solid var(--primary)',
-              overflow: 'hidden'
-            }}
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            style={{ maxWidth: '500px', width: '90%', maxHeight: '90vh', overflowY: 'auto' }}
           >
-            {/* Modal Header */}
-            <div style={{
-              padding: '1.5rem',
-              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(236, 72, 153, 0.2))',
-              borderBottom: '1px solid var(--glass-border)'
-            }}>
-              <button 
-                onClick={closeModal}
-                style={{
-                  position: 'absolute',
-                  top: '1rem',
-                  right: '1rem',
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'var(--text-muted)',
-                  fontSize: '1.5rem',
-                  cursor: 'pointer'
-                }}
-              >×</button>
-              <h3 style={{ margin: 0, fontSize: '1.3rem', color: 'var(--text-primary)' }}>
-                {selectedRec.title}
-              </h3>
+            <button className="modal-close" onClick={closeModal}>×</button>
+            
+            <div className="modal-header ai-modal-header">
+              <div className="ai-avatar-large">✨</div>
+              <div>
+                <h2 style={{ fontSize: '1.25rem' }}>{selectedRec.title}</h2>
+                <p className="ai-subtitle">Wellness Recommendation</p>
+              </div>
             </div>
 
-            {/* Modal Body */}
-            <div style={{ padding: '1.5rem' }}>
-              <p style={{ 
-                margin: '0 0 1.5rem', 
-                color: 'var(--text-secondary)', 
-                lineHeight: 1.7,
-                fontSize: '0.95rem'
-              }}>
-                {selectedRec.detail}
-              </p>
+            <div className="modal-body">
+              <div className="ai-message">
+                <p>{selectedRec.detail}</p>
+              </div>
 
-              {/* Action Box */}
-              <div style={{
-                padding: '1rem',
-                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05))',
-                borderRadius: '12px',
-                borderLeft: '3px solid var(--accent-green)'
-              }}>
-                <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: 'var(--accent-green)', fontSize: '0.9rem' }}>
-                  💡 Try This:
-                </p>
-                <p style={{ margin: 0, color: 'var(--text-primary)', lineHeight: 1.6, fontSize: '0.9rem' }}>
+              <div 
+                className="tip-content" 
+                style={{ 
+                  marginTop: '1.5rem', 
+                  background: 'rgba(16, 185, 129, 0.1)', 
+                  borderLeft: '4px solid #10b981',
+                  padding: '1rem',
+                  borderRadius: '0 8px 8px 0'
+                }}
+              >
+                <strong style={{ color: '#059669', display: 'block', marginBottom: '0.5rem' }}>
+                  💡 Action Item:
+                </strong>
+                <p style={{ margin: 0, color: 'var(--gray-800)' }}>
                   {selectedRec.action}
                 </p>
               </div>
 
-              <button
-                onClick={closeModal}
-                style={{
-                  width: '100%',
-                  marginTop: '1.5rem',
-                  padding: '0.85rem',
-                  background: 'linear-gradient(135deg, var(--primary), var(--accent-pink))',
-                  border: 'none',
-                  borderRadius: '10px',
-                  color: 'white',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontSize: '0.95rem'
-                }}
-              >
-                Got it! ✨
-              </button>
+              <div className="modal-actions" style={{ marginTop: '2rem' }}>
+                <button 
+                  className="action-btn primary"
+                  onClick={closeModal}
+                  style={{ width: '100%', justifyContent: 'center' }}
+                >
+                  Got it!
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </div>,
+        document.body
       )}
+      </AnimatePresence>
     </>
   );
 };
