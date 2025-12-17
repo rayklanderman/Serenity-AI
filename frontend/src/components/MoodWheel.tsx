@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useJac } from '../hooks/useJac';
 import { useSpeechToText, useTextToSpeech } from '../hooks/useSpeech';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import type { UserContext, Emotion } from '../types';
 import type { MoodEntry } from '../App';
 
@@ -186,51 +186,42 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
           ))}
         </motion.div>
 
-        <AnimatePresence>
-          {selectedMood && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              style={{ overflow: 'hidden' }}
+        {/* Note Input - Always visible */}
+        <div className="note-input-wrapper" style={{ marginTop: 'var(--space-4)' }}>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder={isListening ? "🎤 Listening... speak now" : selectedMood ? `Why are you feeling ${selectedMood.name}? (optional)` : "What's on your mind? (optional)"}
+            rows={3}
+            className={isListening ? 'listening' : ''}
+          />
+          {sttSupported && (
+            <button 
+              className={`voice-btn ${isListening ? 'active' : ''}`}
+              onClick={toggleVoice}
+              title={isListening ? "Stop listening" : "Speak your thoughts"}
             >
-              <div className="note-input-wrapper">
-                <textarea
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  placeholder={isListening ? "🎤 Listening... speak now" : `Why are you feeling ${selectedMood.name}? (optional)`}
-                  rows={3}
-                  className={isListening ? 'listening' : ''}
-                />
-                {sttSupported && (
-                  <button 
-                    className={`voice-btn ${isListening ? 'active' : ''}`}
-                    onClick={toggleVoice}
-                    title={isListening ? "Stop listening" : "Speak your thoughts"}
-                  >
-                    {isListening ? '🔴' : '🎤'}
-                  </button>
-                )}
-              </div>
-
-              <button 
-                className="primary-btn log-btn" 
-                onClick={handleLog} 
-                disabled={loading}
-              >
-                {loading ? (
-                  <span className="btn-loading">
-                    <span className="spinner"></span> Connecting...
-                  </span>
-                ) : (
-                  <>
-                    <span>✨</span> Check In
-                  </>
-                )}
-              </button>
-            </motion.div>
+              {isListening ? '🔴' : '🎤'}
+            </button>
           )}
-        </AnimatePresence>
+        </div>
+
+        {/* Log Mood Button - Always visible */}
+        <button 
+          className="primary-btn log-btn" 
+          onClick={handleLog} 
+          disabled={!selectedMood || loading}
+        >
+          {loading ? (
+            <span className="btn-loading">
+              <span className="spinner"></span> Connecting...
+            </span>
+          ) : (
+            <>
+              <span>✨</span> {selectedMood ? 'Check In' : 'Select a Mood First'}
+            </>
+          )}
+        </button>
 
         {/* Success message */}
         {showSuccess && !data && (
@@ -242,6 +233,7 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
             ✓ Mood logged! Generating insight...
           </motion.div>
         )}
+
 
         {/* Mood History Strip */}
         {moodHistory.length > 0 && (
