@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import LandingPage from "./components/LandingPage";
 import MoodWheel from "./components/MoodWheel";
 import JournalEntry from "./components/JournalEntry";
 import EmotionGraph from "./components/EmotionGraph";
 import InsightsTimeline from "./components/InsightsTimeline";
 import TipsPanel from "./components/TipsPanel";
 import About from "./components/About";
+import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import AuthModal from "./components/AuthModal";
 import type { UserContext, Emotion } from "./types";
@@ -25,9 +27,13 @@ export interface JournalEntryData {
   moodChange: number;
 }
 
+type Page = "landing" | "console" | "about" | "contact";
+type ConsoleTab = "log" | "journal" | "insights";
+
 const AppContent: React.FC = () => {
   const { user, signOut, loading: authLoading, isConfigured } = useAuth();
-  const [activeTab, setActiveTab] = useState<"log" | "journal" | "insights" | "about">("log");
+  const [currentPage, setCurrentPage] = useState<Page>("landing");
+  const [activeTab, setActiveTab] = useState<ConsoleTab>("log");
   const [userContext] = useState<UserContext>({ userId: user?.id || "demo-user-1" });
   const [selectedMood, setSelectedMood] = useState<Emotion | null>(null);
   const [moodHistory, setMoodHistory] = useState<MoodEntry[]>([]);
@@ -46,6 +52,16 @@ const AppContent: React.FC = () => {
     setActiveTab("journal");
   };
 
+  const handleGetStarted = () => {
+    setCurrentPage("console");
+  };
+
+  const handleNavigate = (page: string) => {
+    if (page === "landing" || page === "console" || page === "about" || page === "contact") {
+      setCurrentPage(page as Page);
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="app-loading">
@@ -55,21 +71,136 @@ const AppContent: React.FC = () => {
     );
   }
 
+  // Landing Page
+  if (currentPage === "landing") {
+    return (
+      <div className="app-wrapper landing">
+        <div className="aurora-background" />
+        <header className="landing-header">
+          <div className="logo-container" onClick={() => setCurrentPage("landing")}>
+            <span className="logo-emoji">🧘</span>
+            <span className="logo-text">SerenityAI</span>
+          </div>
+          <nav className="landing-nav">
+            <button onClick={() => setCurrentPage("console")}>Console</button>
+            <button onClick={() => setCurrentPage("about")}>About</button>
+            <button onClick={() => setCurrentPage("contact")}>Contact</button>
+          </nav>
+          <div className="auth-section">
+            {user ? (
+              <div className="user-menu">
+                <span className="user-email">{user.email}</span>
+                <button className="auth-btn" onClick={() => signOut()}>Sign Out</button>
+              </div>
+            ) : (
+              <button className="auth-btn primary" onClick={() => setShowAuthModal(true)}>
+                {isConfigured ? '🔐 Sign In' : '👤 Guest Mode'}
+              </button>
+            )}
+          </div>
+        </header>
+        
+        <LandingPage onGetStarted={handleGetStarted} />
+        <Footer onNavigate={handleNavigate} />
+        
+        {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
+      </div>
+    );
+  }
+
+  // About Page
+  if (currentPage === "about") {
+    return (
+      <div className="app-wrapper">
+        <div className="aurora-background" />
+        <header className="app-header">
+          <div className="logo-container" onClick={() => setCurrentPage("landing")} style={{ cursor: 'pointer' }}>
+            <span className="logo-emoji">🧘</span>
+            <h1>SerenityAI</h1>
+          </div>
+          <nav>
+            <button onClick={() => setCurrentPage("landing")}>🏠 Home</button>
+            <button onClick={() => setCurrentPage("console")}>💻 Console</button>
+            <button className="active">ℹ️ About</button>
+            <button onClick={() => setCurrentPage("contact")}>📬 Contact</button>
+          </nav>
+          <div className="auth-section">
+            {user ? (
+              <div className="user-menu">
+                <span className="user-email">{user.email}</span>
+                <button className="auth-btn" onClick={() => signOut()}>Sign Out</button>
+              </div>
+            ) : (
+              <button className="auth-btn primary" onClick={() => setShowAuthModal(true)}>
+                {isConfigured ? '🔐 Sign In' : '👤 Guest Mode'}
+              </button>
+            )}
+          </div>
+        </header>
+        <main className="app-content">
+          <About />
+        </main>
+        <Footer onNavigate={handleNavigate} />
+        {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
+      </div>
+    );
+  }
+
+  // Contact Page
+  if (currentPage === "contact") {
+    return (
+      <div className="app-wrapper">
+        <div className="aurora-background" />
+        <header className="app-header">
+          <div className="logo-container" onClick={() => setCurrentPage("landing")} style={{ cursor: 'pointer' }}>
+            <span className="logo-emoji">🧘</span>
+            <h1>SerenityAI</h1>
+          </div>
+          <nav>
+            <button onClick={() => setCurrentPage("landing")}>🏠 Home</button>
+            <button onClick={() => setCurrentPage("console")}>💻 Console</button>
+            <button onClick={() => setCurrentPage("about")}>ℹ️ About</button>
+            <button className="active">📬 Contact</button>
+          </nav>
+          <div className="auth-section">
+            {user ? (
+              <div className="user-menu">
+                <span className="user-email">{user.email}</span>
+                <button className="auth-btn" onClick={() => signOut()}>Sign Out</button>
+              </div>
+            ) : (
+              <button className="auth-btn primary" onClick={() => setShowAuthModal(true)}>
+                {isConfigured ? '🔐 Sign In' : '👤 Guest Mode'}
+              </button>
+            )}
+          </div>
+        </header>
+        <main className="app-content">
+          <Contact />
+        </main>
+        <Footer onNavigate={handleNavigate} />
+        {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
+      </div>
+    );
+  }
+
+  // Console (Main App)
   return (
     <div className="app-wrapper">
       <div className="aurora-background" />
       <div className="app-container">
         <header className="app-header">
-          <div className="logo-container">
-            <img src="/logo.png" alt="SerenityAI" className="logo" />
-            <h1>SerenityAI</h1>
+          <div className="logo-container" onClick={() => setCurrentPage("landing")} style={{ cursor: 'pointer' }}>
+            <span className="logo-emoji">🧘</span>
+            <h1>SerenityAI <span className="console-badge">Console</span></h1>
           </div>
           <nav>
+            <button onClick={() => setCurrentPage("landing")}>🏠 Home</button>
             <button
               className={activeTab === "log" ? "active" : ""}
               onClick={() => setActiveTab("log")}
             >
-              🏠 Check-in
+              ✨ Check-in
             </button>
             <button
               className={activeTab === "journal" ? "active" : ""}
@@ -82,12 +213,6 @@ const AppContent: React.FC = () => {
               onClick={() => setActiveTab("insights")}
             >
               📊 Insights
-            </button>
-            <button
-              className={activeTab === "about" ? "active" : ""}
-              onClick={() => setActiveTab("about")}
-            >
-              ℹ️ About
             </button>
           </nav>
           <div className="auth-section">
@@ -133,11 +258,9 @@ const AppContent: React.FC = () => {
               <InsightsTimeline userContext={userContext} moodHistory={moodHistory} />
             </div>
           )}
-
-          {activeTab === "about" && <About />}
         </main>
       </div>
-      <Footer />
+      <Footer onNavigate={handleNavigate} />
 
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </div>
