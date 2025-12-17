@@ -255,25 +255,117 @@ History: {json.dumps(mood_history[:10])}"""}
     }
 
 def generate_prompt(current_mood: str, recent_triggers: list) -> str:
-    """Generate journaling prompt - Generative Agent."""
+    """Generate dynamic, mood-specific mindfulness prompts - Generative Agent.
+    
+    Key principle: Different moods need different approaches:
+    - Happy: Maintain, amplify, share gratitude
+    - Calm: Deepen peace, extend to other areas
+    - Anxious: Ground, breathe, perspective
+    - Sad: Validate, gentle hope, small steps
+    - Angry: Release safely, understand, redirect
+    - Neutral: Explore, discover, energize
+    """
+    
+    # Mood-specific strategies
+    mood_strategies = {
+        "happy": {
+            "goal": "maintain and share your joy",
+            "approach": "gratitude amplification",
+            "tone": "celebratory and warm",
+            "example_prompts": [
+                "What specific moment sparked this happiness? How can you create more of these?",
+                "Who would you love to share this good mood with today?",
+                "What simple thing could you do right now to extend this feeling?"
+            ]
+        },
+        "calm": {
+            "goal": "deepen your inner peace",
+            "approach": "mindful presence",
+            "tone": "gentle and contemplative",
+            "example_prompts": [
+                "Let this calm wash over you. What does your body feel like in this peaceful state?",
+                "Is there an area of your life where this calmness could bring clarity?",
+                "What sound, sight, or sensation is anchoring you in this moment?"
+            ]
+        },
+        "anxious": {
+            "goal": "ground yourself and find perspective",
+            "approach": "grounding and gentle reassurance",
+            "tone": "soothing and practical",
+            "example_prompts": [
+                "Name 5 things you can see right now. Let's come back to this moment together.",
+                "What's one small thing within your control right now? Focus just on that.",
+                "This feeling will pass. What has helped you through anxious moments before?"
+            ]
+        },
+        "sad": {
+            "goal": "honor your feelings while finding gentle light",
+            "approach": "validation with gentle hope",
+            "tone": "compassionate and understanding",
+            "example_prompts": [
+                "It's okay to feel this way. What would you say to a friend feeling the same?",
+                "Even on hard days, there are tiny moments of okay. Can you find one today?",
+                "Your feelings matter. What does your heart need most right now?"
+            ]
+        },
+        "angry": {
+            "goal": "release safely and understand the source",
+            "approach": "acknowledgment and healthy release",
+            "tone": "validating but calming",
+            "example_prompts": [
+                "Your anger is valid. What boundary was crossed? What do you need?",
+                "Imagine putting this anger into a balloon and watching it float away. How does that feel?",
+                "Underneath anger often lies hurt. What might be beneath the surface?"
+            ]
+        },
+        "neutral": {
+            "goal": "explore what brings you alive",
+            "approach": "gentle curiosity",
+            "tone": "inviting and curious",
+            "example_prompts": [
+                "In this neutral space, what would bring a spark of excitement to your day?",
+                "What's something you've been curious about but haven't explored yet?",
+                "If you could do anything right now with no obligations, what would you choose?"
+            ]
+        }
+    }
+    
+    strategy = mood_strategies.get(current_mood.lower(), mood_strategies["neutral"])
+    
     if not client:
-        return f"What made you feel {current_mood} today? Reflect on one positive moment."
+        import random
+        return random.choice(strategy["example_prompts"])
     
     try:
         triggers_text = ', '.join(recent_triggers[:5]) if recent_triggers else 'general life events'
+        
         response = client.chat.completions.create(
             model=MODEL,
             messages=[
-                {"role": "system", "content": "You are a gentle journaling guide."},
-                {"role": "user", "content": f"Create a thoughtful journaling prompt for someone feeling {current_mood} dealing with: {triggers_text}. Be introspective but gentle. 2-3 sentences only."}
+                {"role": "system", "content": f"""You are a warm, insightful mindfulness guide. Your approach for someone feeling {current_mood}:
+                
+GOAL: {strategy['goal']}
+APPROACH: {strategy['approach']}  
+TONE: {strategy['tone']}
+
+Create a unique, heartfelt mindfulness prompt that:
+1. Acknowledges their current emotional state with empathy
+2. Offers a specific, actionable reflection or practice
+3. Feels personal, never generic or repetitive
+4. Is 2-3 sentences, conversational and warm
+
+NEVER use clichés like "take a deep breath" or "this too shall pass" unless truly fitting.
+Make each prompt feel like it was written just for them."""},
+                {"role": "user", "content": f"Create a mindfulness prompt for someone feeling {current_mood}, dealing with: {triggers_text}"}
             ],
-            temperature=0.8,
-            max_tokens=100
+            temperature=0.9,  # Higher for more variety
+            max_tokens=150
         )
         return response.choices[0].message.content
     except Exception as e:
-        print(f"Groq error: {e}")
-        return "What small moment brought you peace today?"
+        print(f"LLM error: {e}")
+        import random
+        return random.choice(strategy["example_prompts"])
 
 def create_breathing_exercise(stress_level: int) -> dict:
     """Create breathing exercise - Generative Agent."""
@@ -311,101 +403,212 @@ def create_breathing_exercise(stress_level: int) -> dict:
     }
 
 def mind_coach(current_mood: str, current_hour: int, last_break_minutes: int, is_working: bool) -> dict:
-    """Mind Coach - Productivity coaching agent that considers mental state."""
-    # Time-based context
+    """Mind Coach - Empathetic productivity coaching that respects mental state.
+    
+    Key Principles:
+    1. Mental health comes first - never push productivity at the expense of wellbeing
+    2. Be warm and human - not robotic or preachy
+    3. Small steps matter - don't overwhelm with big goals
+    4. Growth mindset - encourage without forcing
+    5. Personalized - adapt to time, mood, and context
+    """
+    import random
+    
+    # Time context
     time_context = "morning" if current_hour < 12 else "afternoon" if current_hour < 17 else "evening"
+    is_late_night = current_hour >= 22 or current_hour < 6
     
-    # Default tips based on time and state
-    base_tips = []
+    # Mood understanding
+    mood_lower = current_mood.lower()
+    is_positive = mood_lower in ["happy", "calm"]
+    is_neutral = mood_lower == "neutral"
+    is_struggling = mood_lower in ["anxious", "sad", "angry"]
     
-    # Hydration reminder
-    if is_working and last_break_minutes > 45:
-        base_tips.append({
-            "type": "hydration",
-            "icon": "💧",
-            "title": "Stay Hydrated",
-            "message": "You've been working for a while. Take a moment to drink some water!"
+    # Mood-specific coaching strategies
+    mood_coaching = {
+        "happy": {
+            "mental_check": random.choice([
+                "Your positive energy is wonderful! Let's channel it into something meaningful.",
+                "Happiness is fuel for great things. What would you love to accomplish?",
+                "Love seeing you in a good place! This is the perfect time for focused work."
+            ]),
+            "productivity_focus": "leverage this energy for meaningful progress"
+        },
+        "calm": {
+            "mental_check": random.choice([
+                "This peaceful state is perfect for deep work. Your mind is clear and ready.",
+                "Calmness is a superpower. You can tackle complex tasks with clarity right now.",
+                "In this centered state, you're capable of incredible focus."
+            ]),
+            "productivity_focus": "use this clarity for deep, meaningful work"
+        },
+        "anxious": {
+            "mental_check": random.choice([
+                "I see you're feeling anxious. That's okay. Let's take things gently, one small step at a time.",
+                "Anxiety can feel overwhelming. Remember: you don't have to do everything. What's ONE tiny thing?",
+                "Your wellbeing matters more than any task. Let's focus only on what truly needs attention."
+            ]),
+            "productivity_focus": "break things into tiny, manageable pieces - no pressure"
+        },
+        "sad": {
+            "mental_check": random.choice([
+                "I'm here with you. On days like this, even small accomplishments are victories.",
+                "It's okay to move slowly today. What's one gentle thing you can do for yourself?",
+                "Sadness is heavy. Be kind to yourself. Any progress today is meaningful."
+            ]),
+            "productivity_focus": "gentle, self-compassionate micro-steps only"
+        },
+        "angry": {
+            "mental_check": random.choice([
+                "I hear you. Anger often has good reasons. Let's channel that energy constructively.",
+                "That fire you're feeling? It can fuel action. What needs to change?",
+                "Your anger is valid. Let's use this intensity purposefully, not destructively."
+            ]),
+            "productivity_focus": "channel this energy into constructive action"
+        },
+        "neutral": {
+            "mental_check": random.choice([
+                "A neutral state is a clean slate. What would make today feel worthwhile?",
+                "No strong emotions pulling you - that's actually great for getting things done.",
+                "This is a steady state. What's one thing that would give you a sense of accomplishment?"
+            ]),
+            "productivity_focus": "set an intentional direction for the day"
+        }
+    }
+    
+    coaching = mood_coaching.get(mood_lower, mood_coaching["neutral"])
+    
+    # Build contextual tips
+    tips = []
+    
+    # Time-appropriate tip (make them more dynamic and less repetitive)
+    if is_late_night:
+        tips.append({
+            "type": "rest",
+            "icon": "🌙",
+            "title": "Rest is Productive",
+            "message": random.choice([
+                "Your best work tomorrow depends on rest tonight. Consider winding down.",
+                "Late-night productivity is usually borrowed from tomorrow. Time to recharge?",
+                "Sleep is when your brain processes and consolidates. Consider calling it a night."
+            ])
         })
-    
-    # Break reminder
-    if is_working and last_break_minutes > 60:
-        base_tips.append({
-            "type": "break",
-            "icon": "⏰",
-            "title": "Time for a Break",
-            "message": "Consider a 5-minute stretch. Short breaks boost productivity!"
-        })
-    
-    # Time-based tips
-    if current_hour >= 21:
-        base_tips.append({
-            "type": "sleep",
-            "icon": "😴",
-            "title": "Wind Down Time",
-            "message": "It's getting late. Consider winding down for better sleep quality."
+    elif current_hour >= 6 and current_hour < 9:
+        tips.append({
+            "type": "morning",
+            "icon": "☀️",
+            "title": "Morning Power Hour",
+            "message": random.choice([
+                "Your mind is fresh. What's the ONE most important thing for today?",
+                "Morning energy is premium fuel. Don't waste it on emails - tackle something meaningful!",
+                "Set one clear intention for today. What will make you feel accomplished?"
+            ])
         })
     elif current_hour >= 14 and current_hour < 16:
-        base_tips.append({
+        tips.append({
             "type": "energy",
-            "icon": "☕",
-            "title": "Afternoon Slump",
-            "message": "Afternoon energy dip is normal. A short walk or light snack can help!"
+            "icon": "🔋",
+            "title": "Afternoon Recharge",
+            "message": random.choice([
+                "Afternoon dip? That's biology, not laziness. A 10-min walk can reset your brain.",
+                "If focus is fading, switch to a different type of task - variety sparks energy.",
+                "This is a great time for collaborative or creative work. Save deep focus for later."
+            ])
         })
     
-    if not client:
-        return {
-            "productivity_tips": base_tips if base_tips else [{
-                "type": "general",
-                "icon": "✨",
-                "title": "Stay Focused",
-                "message": "You're doing great! Keep up the good work."
-            }],
-            "mental_check": f"Feeling {current_mood} is okay. Take things at your own pace.",
-            "time_greeting": f"Good {time_context}!"
-        }
+    # Break reminder (make it more empathetic based on mood)
+    if is_working and last_break_minutes > 50:
+        if is_struggling:
+            tips.append({
+                "type": "break",
+                "icon": "🌿",
+                "title": "Gentle Pause",
+                "message": random.choice([
+                    "You've been at it for a while. A short break isn't weakness - it's wisdom.",
+                    "Step away for a few minutes. Sometimes the best insights come when we rest.",
+                    "Your brain needs small breaks to stay healthy. Even 3 minutes helps."
+                ])
+            })
+        else:
+            tips.append({
+                "type": "break",
+                "icon": "🚀",
+                "title": "Strategic Break",
+                "message": random.choice([
+                    "Top performers take breaks every 50-90 min. Time to refresh!",
+                    "A 5-minute break now = better focus for the next hour.",
+                    "Movement boosts creativity. Quick stretch, then back to it?"
+                ])
+            })
     
-    try:
-        # Get personalized coaching from LLM
-        mood_context = "positive" if current_mood in ["happy", "calm"] else "challenging" if current_mood in ["anxious", "sad", "angry"] else "neutral"
-        
-        response = client.chat.completions.create(
-            model=MODEL,
-            messages=[
-                {"role": "system", "content": """You are a supportive mind coach. Be brief, warm, and practical. 
-Consider the person's mental state before giving productivity advice. 
-If they're stressed, prioritize wellbeing over productivity."""},
-                {"role": "user", "content": f"""It's {time_context}. User is feeling {current_mood} ({"positive" if mood_context == "positive" else "needs support"}).
-{"They're working and" if is_working else ""} Last break was {last_break_minutes} minutes ago.
+    # Hydration (vary the messages)
+    if is_working and last_break_minutes > 40:
+        tips.append({
+            "type": "hydration",
+            "icon": "💧",
+            "title": "Hydrate Your Brain",
+            "message": random.choice([
+                "Your brain is 75% water. A glass now = better thinking in 10 minutes.",
+                "Quick hydration check! Even mild dehydration affects focus.",
+                "Water break! Your body and mind will thank you."
+            ])
+        })
+    
+    # Get personalized AI coaching if available
+    if client:
+        try:
+            response = client.chat.completions.create(
+                model=MODEL,
+                messages=[
+                    {"role": "system", "content": f"""You are a warm, wise productivity coach who deeply respects mental health. 
+                    
+Your coaching style:
+- EMPATHETIC: Always acknowledge feelings before suggesting action
+- HUMANE: Never pushy or guilt-tripping. Growth happens gently.
+- PRACTICAL: Give specific, actionable micro-steps
+- ENCOURAGING: Highlight what they're already doing well
+- HONEST: Real talk, but delivered with kindness
 
-Give ONE brief, supportive coaching tip (under 50 words) that:
-- Acknowledges their current mood
-- Suggests something helpful (break/hydration/sleep/task management)
-- Is mindful of their mental state"""}
-            ],
-            temperature=0.7,
-            max_tokens=100
-        )
-        
-        coach_message = response.choices[0].message.content
-        
-        return {
-            "productivity_tips": base_tips + [{
+CURRENT CONTEXT:
+- Time: {time_context} ({current_hour}:00)
+- Mood: {current_mood} ({'positive energy!' if is_positive else 'needs gentle support' if is_struggling else 'neutral/ready'})
+- Working: {is_working}
+- Last break: {last_break_minutes} min ago
+
+Your response should be 2-3 sentences max. Be specific, not generic. Make them feel seen and supported."""},
+                    {"role": "user", "content": f"Give me one personalized coaching insight that honors my {current_mood} mood while gently encouraging growth."}
+                ],
+                temperature=0.85,  # Higher for variety
+                max_tokens=120
+            )
+            
+            coach_message = response.choices[0].message.content
+            tips.append({
                 "type": "coach",
-                "icon": "🎯",
+                "icon": "🧠",
                 "title": "Your Mind Coach",
                 "message": coach_message
-            }],
-            "mental_check": f"I see you're feeling {current_mood}. " + ("That's wonderful!" if mood_context == "positive" else "I'm here to support you."),
-            "time_greeting": f"Good {time_context}!"
-        }
-        
-    except Exception as e:
-        print(f"Mind coach error: {e}")
-        return {
-            "productivity_tips": base_tips,
-            "mental_check": f"Feeling {current_mood} is valid. Take things one step at a time.",
-            "time_greeting": f"Good {time_context}!"
-        }
+            })
+            
+        except Exception as e:
+            print(f"Mind coach LLM error: {e}")
+    
+    # Ensure we always have at least one tip
+    if not tips:
+        tips.append({
+            "type": "encouragement",
+            "icon": "💪",
+            "title": "You've Got This",
+            "message": coaching.get("mental_check", "You're doing great. Take things one step at a time.")
+        })
+    
+    return {
+        "productivity_tips": tips,
+        "mental_check": coaching["mental_check"],
+        "time_greeting": f"Good {time_context}!",
+        "productivity_focus": coaching["productivity_focus"]
+    }
+
 
 # =====================================================
 # WALKER ENDPOINTS (match Jac walker names)
