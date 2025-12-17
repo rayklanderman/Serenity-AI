@@ -816,13 +816,25 @@ textarea:focus {
 }
 
 /* =====================================================
-   JOURNAL LAYOUT
+   JOURNAL LAYOUT (Vertical Flow)
    ===================================================== */
+.journal-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
 .journal-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-6);
   align-items: start;
+}
+
+.ai-insight-card {
+  position: relative;
 }
 
 .journal-input-section textarea {

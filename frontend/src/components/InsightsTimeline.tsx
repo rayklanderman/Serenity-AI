@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useJac } from '../hooks/useJac';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import type { UserContext } from '../types';
 import type { MoodEntry } from '../App';
 
@@ -213,18 +213,14 @@ const InsightsTimeline: React.FC<InsightsTimelineProps> = ({ userContext }) => {
                       fontSize: '0.9rem',
                       cursor: 'pointer',
                       border: 'none',
-                      color: 'var(--text-primary)',
+                      color: 'var(--gray-700)',
                       textAlign: 'left',
                       transition: 'all 0.2s ease',
                       width: '100%'
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(90deg, rgba(139, 92, 246, 0.3) 0%, rgba(139, 92, 246, 0.1) 100%)';
-                      e.currentTarget.style.transform = 'translateX(4px)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(90deg, rgba(139, 92, 246, 0.15) 0%, transparent 100%)';
-                      e.currentTarget.style.transform = 'translateX(0)';
+                    whileHover={{
+                      background: 'linear-gradient(90deg, rgba(139, 92, 246, 0.3) 0%, rgba(139, 92, 246, 0.1) 100%)',
+                      x: 4
                     }}
                   >
                     <span>{rec}</span>
@@ -232,80 +228,157 @@ const InsightsTimeline: React.FC<InsightsTimelineProps> = ({ userContext }) => {
                   </motion.button>
                 ))}
               </div>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.75rem', textAlign: 'center' }}>
+              <p style={{ fontSize: '0.75rem', color: 'var(--gray-500)', marginTop: '0.75rem', textAlign: 'center' }}>
                 Click any recommendation to learn more
               </p>
             </div>
           </div>
         ) : (
-          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>
+          <p style={{ color: 'var(--gray-500)', textAlign: 'center', padding: '2rem' }}>
             No insights yet. Start logging your moods!
           </p>
         )}
       </motion.div>
 
-      {/* Modal Popup for Recommendation Detail */}
-      <AnimatePresence>
-      {/* Modal Popup for Recommendation Detail - Portal to escape Stacking Context */}
+      {/* Modal Popup for Recommendation Detail - Using createPortal for proper z-index */}
       {selectedRec && createPortal(
-        <div className="modal-overlay" onClick={closeModal} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div 
+          className="modal-overlay" 
+          onClick={closeModal} 
+          style={{ 
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            zIndex: 9999, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            background: 'rgba(15, 23, 42, 0.5)',
+            backdropFilter: 'blur(8px)'
+          }}
+        >
           <motion.div 
             className="ai-response-modal"
             onClick={(e) => e.stopPropagation()}
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            style={{ maxWidth: '500px', width: '90%', maxHeight: '90vh', overflowY: 'auto' }}
+            transition={{ type: 'spring', duration: 0.4 }}
+            style={{ 
+              maxWidth: '500px', 
+              width: '90%', 
+              maxHeight: '90vh', 
+              overflowY: 'auto',
+              background: 'var(--white)',
+              borderRadius: 'var(--radius-xl)',
+              boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)'
+            }}
           >
-            <button className="modal-close" onClick={closeModal}>×</button>
+            <button 
+              className="modal-close" 
+              onClick={closeModal}
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
+                width: '36px',
+                height: '36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'var(--gray-100)',
+                border: 'none',
+                borderRadius: '50%',
+                fontSize: '1.5rem',
+                color: 'var(--gray-500)',
+                cursor: 'pointer',
+                zIndex: 10
+              }}
+            >
+              ×
+            </button>
             
-            <div className="modal-header ai-modal-header">
-              <div className="ai-avatar-large">✨</div>
+            <div className="ai-modal-header" style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              padding: '1.5rem',
+              background: 'linear-gradient(135deg, rgba(129, 140, 248, 0.15) 0%, transparent 100%)',
+              borderBottom: '1px solid var(--gray-200)'
+            }}>
+              <div style={{
+                width: '56px',
+                height: '56px',
+                background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent-purple) 100%)',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.75rem'
+              }}>
+                ✨
+              </div>
               <div>
-                <h2 style={{ fontSize: '1.25rem' }}>{selectedRec.title}</h2>
-                <p className="ai-subtitle">Wellness Recommendation</p>
+                <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--gray-900)' }}>{selectedRec.title}</h2>
+                <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', color: 'var(--gray-500)' }}>Wellness Recommendation</p>
               </div>
             </div>
 
-            <div className="modal-body">
-              <div className="ai-message">
-                <p>{selectedRec.detail}</p>
-              </div>
+            <div style={{ padding: '1.5rem' }}>
+              <p style={{ 
+                margin: 0, 
+                fontSize: '1.05rem', 
+                lineHeight: 1.7, 
+                color: 'var(--gray-700)' 
+              }}>
+                {selectedRec.detail}
+              </p>
 
-              <div 
-                className="tip-content" 
-                style={{ 
-                  marginTop: '1.5rem', 
-                  background: 'rgba(16, 185, 129, 0.1)', 
-                  borderLeft: '4px solid #10b981',
-                  padding: '1rem',
-                  borderRadius: '0 8px 8px 0'
-                }}
-              >
+              <div style={{ 
+                marginTop: '1.5rem', 
+                background: 'rgba(16, 185, 129, 0.1)', 
+                borderLeft: '4px solid #10b981',
+                padding: '1rem',
+                borderRadius: '0 8px 8px 0'
+              }}>
                 <strong style={{ color: '#059669', display: 'block', marginBottom: '0.5rem' }}>
                   💡 Action Item:
                 </strong>
-                <p style={{ margin: 0, color: 'var(--gray-800)' }}>
+                <p style={{ margin: 0, color: 'var(--gray-700)' }}>
                   {selectedRec.action}
                 </p>
               </div>
 
-              <div className="modal-actions" style={{ marginTop: '2rem' }}>
-                <button 
-                  className="action-btn primary"
-                  onClick={closeModal}
-                  style={{ width: '100%', justifyContent: 'center' }}
-                >
-                  Got it!
-                </button>
-              </div>
+              <button 
+                onClick={closeModal}
+                style={{
+                  width: '100%',
+                  marginTop: '1.5rem',
+                  padding: '0.875rem',
+                  background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)',
+                  border: 'none',
+                  borderRadius: 'var(--radius-full)',
+                  color: 'white',
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
+                }}
+              >
+                ✓ Got it!
+              </button>
             </div>
           </motion.div>
         </div>,
         document.body
       )}
-      </AnimatePresence>
     </>
   );
 };
 
 export default InsightsTimeline;
+

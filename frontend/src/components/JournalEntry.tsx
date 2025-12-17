@@ -15,6 +15,7 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
   const [content, setContent] = useState('');
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [latestInsight, setLatestInsight] = useState<string | null>(null);
   const { spawn, loading, data } = useJac('JournalSaver');
 
   const handleSave = async () => {
@@ -34,6 +35,7 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
     });
 
     if (result) {
+      setLatestInsight(result.response);
       onEntrySaved({
         content,
         timestamp: new Date(),
@@ -63,12 +65,12 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
   };
 
   return (
-    <div className="journal-layout">
-      {/* Left: Input Section */}
+    <div className="journal-page">
+      {/* Journal Input Section */}
       <motion.div 
         className="card journal-input-card"
-        initial={{ x: -20, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
       >
         <h2>📝 Journal Entry</h2>
@@ -83,49 +85,75 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="How was your day? What's on your mind?"
-          rows={8}
+          rows={6}
         />
         
         <button className="primary-btn" onClick={handleSave} disabled={loading || !content.trim()}>
           {loading ? '✨ Analyzing...' : '💾 Save Entry'}
         </button>
 
-        <AnimatePresence>
-          {saveSuccess && (
-            <motion.div 
-              className="save-success"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-            >
-              ✅ Entry saved! Check your entries on the right →
-            </motion.div>
-          )}
-
-          {data && (
-            <motion.div 
-              className="analysis-result"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-            >
-              <div className="ai-bubble">
-                <span className="ai-icon">🤖</span>
-                <div>
-                  <h4>AI Insight</h4>
-                  <p className="ai-message">{data.response}</p>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {saveSuccess && (
+          <motion.div 
+            className="save-success"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            ✅ Entry saved successfully!
+          </motion.div>
+        )}
       </motion.div>
 
-      {/* Right: Entries List */}
+      {/* AI Insight - Appears ABOVE entries after saving */}
+      <AnimatePresence>
+        {(latestInsight || data?.response) && (
+          <motion.div 
+            className="card ai-insight-card"
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20 }}
+            style={{
+              background: 'linear-gradient(135deg, rgba(129, 140, 248, 0.15) 0%, rgba(167, 139, 250, 0.1) 100%)',
+              borderLeft: '4px solid var(--primary)',
+              marginTop: 'var(--space-4)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-4)' }}>
+              <div className="ai-avatar-large" style={{ width: 48, height: 48, fontSize: '1.5rem', flexShrink: 0 }}>🧘</div>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ margin: '0 0 var(--space-2) 0', color: 'var(--primary)', fontSize: '1rem' }}>
+                  ✨ AI Insight
+                </h3>
+                <p className="ai-message" style={{ margin: 0, lineHeight: 1.7 }}>
+                  {latestInsight || data?.response}
+                </p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setLatestInsight(null)}
+              style={{
+                position: 'absolute',
+                top: 'var(--space-3)',
+                right: 'var(--space-3)',
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--gray-500)',
+                cursor: 'pointer',
+                fontSize: '1.2rem'
+              }}
+            >
+              ×
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Entries List */}
       <motion.div 
         className="card journal-entries-card"
-        initial={{ x: 20, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
+        style={{ marginTop: 'var(--space-4)' }}
       >
         <h3>📚 Your Entries ({entries.length})</h3>
         {entries.length > 0 ? (
@@ -144,7 +172,7 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
                   <span className="mood-change">{getMoodChangeIcon(entry.moodChange)}</span>
                 </div>
                 <p className="entry-preview">
-                  {expandedIndex === i ? entry.content : entry.content.slice(0, 60) + (entry.content.length > 60 ? '...' : '')}
+                  {expandedIndex === i ? entry.content : entry.content.slice(0, 80) + (entry.content.length > 80 ? '...' : '')}
                 </p>
                 <AnimatePresence>
                   {expandedIndex === i && entry.aiInsight && (
@@ -175,3 +203,4 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
 };
 
 export default JournalEntry;
+
