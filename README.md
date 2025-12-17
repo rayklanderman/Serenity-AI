@@ -16,7 +16,7 @@
 
 ## 🌐 Live Demo
 
-- **Frontend**: https://serenity-ai.vercel.app
+- **Frontend**: https://serenity-ai-gules.vercel.app
 - **Backend**: https://serenity-ai-vfxy.onrender.com
 
 ---
@@ -27,7 +27,7 @@ SerenityAI uses a **hybrid architecture** that combines:
 
 1. **JacLang/OSP Concepts** - The `.jac` files define the graph structure, nodes, edges, walkers, and byLLM agent patterns
 2. **FastAPI Backend** - Implements those patterns reliably with direct Groq LLM calls
-3. **React Frontend** - Modern TypeScript UI with blue/black/white design
+3. **React Frontend** - Modern TypeScript UI with premium design
 
 This approach demonstrates JacLang concepts while ensuring reliable demo performance.
 
@@ -35,15 +35,16 @@ This approach demonstrates JacLang concepts while ensuring reliable demo perform
 
 ## ✨ Features
 
-| Feature                 | Description                                      |
-| ----------------------- | ------------------------------------------------ |
-| **Mood Check-in**       | Log emotions with AI empathy response            |
-| **Mood-Aligned Tips**   | Tips personalized to your current mood           |
-| **Mind Coach**          | Productivity coaching (breaks, hydration, sleep) |
-| **Pattern Analysis**    | Weekly emotional trends with charts              |
-| **Smart Journal**       | Side-by-side layout with AI insights             |
-| **Breathing Exercises** | Personalized stress relief exercises             |
-| **About Section**       | Learn how the app helps you                      |
+| Feature               | Description                                      |
+| --------------------- | ------------------------------------------------ |
+| **Landing Page**      | Hero section, features, tech stack, CTAs         |
+| **Mood Check-in**     | Log emotions with AI empathy response            |
+| **Mood-Aligned Tips** | Tips personalized to your current mood           |
+| **Mind Coach**        | Productivity coaching (breaks, hydration, sleep) |
+| **Pattern Analysis**  | Weekly emotional trends with charts              |
+| **Smart Journal**     | Side-by-side layout with AI insights             |
+| **Contact Page**      | Contact form + social links                      |
+| **About Section**     | Learn how the app helps you                      |
 
 ---
 
