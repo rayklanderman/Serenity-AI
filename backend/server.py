@@ -23,17 +23,85 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Initialize Groq client
+# =====================================================
+# MULTI-PROVIDER LLM SUPPORT (Groq + Qwen)
+# =====================================================
+
+# Primary: Groq
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+groq_client = None
 try:
     from groq import Groq
-    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-    client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
-    print(f"✅ Groq initialized with key: {GROQ_API_KEY[:20]}..." if GROQ_API_KEY else "❌ No Groq API key")
+    if GROQ_API_KEY:
+        groq_client = Groq(api_key=GROQ_API_KEY)
+        print(f"✅ Groq initialized: {GROQ_API_KEY[:20]}...")
+    else:
+        print("⚠️ No GROQ_API_KEY - Groq disabled")
 except ImportError:
-    client = None
-    print("❌ Groq package not installed")
+    print("⚠️ Groq package not installed")
 
-MODEL = "llama-3.3-70b-versatile"
+# Fallback: Qwen via DashScope (OpenAI-compatible)
+QWEN_API_KEY = os.getenv("QWEN_API_KEY")
+qwen_client = None
+try:
+    from openai import OpenAI
+    if QWEN_API_KEY:
+        qwen_client = OpenAI(
+            api_key=QWEN_API_KEY,
+            base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
+        )
+        print(f"✅ Qwen initialized via DashScope")
+    else:
+        print("⚠️ No QWEN_API_KEY - Qwen disabled")
+except ImportError:
+    print("⚠️ OpenAI package not installed (needed for Qwen)")
+
+# Model names
+GROQ_MODEL = "llama-3.3-70b-versatile"
+QWEN_MODEL = "qwen-plus"  # Good balance of quality and speed
+
+# Unified LLM call function with fallback
+async def call_llm(prompt: str, system_prompt: str = "You are a helpful assistant.") -> str:
+    """Call LLM with automatic fallback from Groq to Qwen."""
+    
+    # Try Groq first (faster)
+    if groq_client:
+        try:
+            response = groq_client.chat.completions.create(
+                model=GROQ_MODEL,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+                max_tokens=500
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            print(f"⚠️ Groq failed: {e}, trying Qwen...")
+    
+    # Fallback to Qwen
+    if qwen_client:
+        try:
+            response = qwen_client.chat.completions.create(
+                model=QWEN_MODEL,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+                max_tokens=500
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            print(f"❌ Qwen also failed: {e}")
+    
+    # Both failed - return error message
+    return "I'm having trouble connecting right now. Please try again in a moment."
+
+# Legacy compatibility
+client = groq_client
+MODEL = GROQ_MODEL
 
 app = FastAPI(
     title="SerenityAI API",
