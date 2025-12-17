@@ -156,14 +156,6 @@ const Contact: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            <div className="hackathon-badge">
-              <span className="badge-icon">🏆</span>
-              <div>
-                <strong>Jaseci AI Hackathon 2025</strong>
-                <p>MindMate Harmony Space Track</p>
-              </div>
-            </div>
           </motion.div>
         </div>
       </motion.div>
