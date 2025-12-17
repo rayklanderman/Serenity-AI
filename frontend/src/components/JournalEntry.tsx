@@ -64,6 +64,24 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
     return '➡️';
   };
 
+  // Dynamic mood-aware journal prompts
+  const getMoodPlaceholder = () => {
+    if (!currentMood) {
+      return "How was your day? What's on your mind?";
+    }
+    
+    const prompts: Record<string, string> = {
+      happy: "What made today special? Example: 'I'm grateful for the beautiful morning sunshine and the productive meeting I had...'",
+      calm: "Reflect on your peaceful state. Example: 'I feel at ease today. The morning meditation really helped center my thoughts...'",
+      anxious: "Let's work through these feelings. Example: 'I've been feeling worried about... but I'm choosing to focus on what I can control...'",
+      sad: "It's okay to express this. Example: 'Today has been hard, but I'm proud of myself for showing up. I've decided to be gentle with myself...'",
+      angry: "Write it out constructively. Example: 'I felt frustrated when... but I'm learning to channel this energy into positive action...'",
+      neutral: "What's been on your mind? Example: 'Today was steady. I'm taking this time to reflect on my goals and what I want to focus on...'"
+    };
+    
+    return prompts[currentMood.name] || prompts.neutral;
+  };
+
   return (
     <div className="journal-layout">
       {/* LEFT SIDE: Input Section */}
@@ -84,7 +102,7 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="How was your day? What's on your mind?"
+          placeholder={getMoodPlaceholder()}
           rows={10}
         />
         

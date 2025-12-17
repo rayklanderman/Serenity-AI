@@ -39,6 +39,7 @@ const AppContent: React.FC = () => {
   const [moodHistory, setMoodHistory] = useState<MoodEntry[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntryData[]>([]);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleMoodLogged = (entry: MoodEntry) => {
     setMoodHistory((prev) => [entry, ...prev].slice(0, 20));
@@ -81,12 +82,26 @@ const AppContent: React.FC = () => {
             <span className="logo-emoji">🧘</span>
             <span className="logo-text">SerenityAI</span>
           </div>
-          <nav className="landing-nav">
+          
+          {/* Desktop Nav */}
+          <nav className="landing-nav desktop-nav">
             <button onClick={() => setCurrentPage("console")}>Console</button>
             <button onClick={() => setCurrentPage("about")}>About</button>
             <button onClick={() => setCurrentPage("contact")}>Contact</button>
           </nav>
-          <div className="auth-section">
+          
+          {/* Mobile Hamburger Button */}
+          <button 
+            className="hamburger-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span className={`hamburger-line ${mobileMenuOpen ? 'open' : ''}`}></span>
+            <span className={`hamburger-line ${mobileMenuOpen ? 'open' : ''}`}></span>
+            <span className={`hamburger-line ${mobileMenuOpen ? 'open' : ''}`}></span>
+          </button>
+          
+          <div className="auth-section desktop-auth">
             {user ? (
               <div className="user-menu">
                 <span className="user-email">{user.email}</span>
@@ -99,6 +114,29 @@ const AppContent: React.FC = () => {
             )}
           </div>
         </header>
+        
+        {/* Mobile Nav Overlay */}
+        {mobileMenuOpen && (
+          <div className="mobile-nav-overlay" onClick={() => setMobileMenuOpen(false)}>
+            <nav className="mobile-nav" onClick={(e) => e.stopPropagation()}>
+              <button onClick={() => { setCurrentPage("console"); setMobileMenuOpen(false); }}>💻 Console</button>
+              <button onClick={() => { setCurrentPage("about"); setMobileMenuOpen(false); }}>ℹ️ About</button>
+              <button onClick={() => { setCurrentPage("contact"); setMobileMenuOpen(false); }}>📬 Contact</button>
+              <div className="mobile-auth">
+                {user ? (
+                  <>
+                    <span className="user-email">{user.email}</span>
+                    <button onClick={() => { signOut(); setMobileMenuOpen(false); }}>Sign Out</button>
+                  </>
+                ) : (
+                  <button onClick={() => { setShowAuthModal(true); setMobileMenuOpen(false); }}>
+                    {isConfigured ? '🔐 Sign In' : '👤 Guest Mode'}
+                  </button>
+                )}
+              </div>
+            </nav>
+          </div>
+        )}
         
         <LandingPage onGetStarted={handleGetStarted} />
         <Footer onNavigate={handleNavigate} />

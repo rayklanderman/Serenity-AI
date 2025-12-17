@@ -70,36 +70,82 @@ export const useJac = <T extends WalkerName>(walkerName: T): UseJacReturn<T> => 
       setError(error);
       console.error(`[useJac] Error spawning ${walkerName}:`, error);
       
-      // Return mock data as fallback for demo purposes
+      // Return intelligent fallback responses for demo purposes
+      const getMoodAwareTip = () => {
+        const mood = (payload?.current_mood as string) || 'neutral';
+        const tips: Record<string, { prompt: string; exercise: { name: string; duration_seconds: number; steps: string[]; benefits: string } }> = {
+          'happy': {
+            prompt: "You're radiating positive energy today! Take a moment to savor this feeling and think about what contributed to your joy.",
+            exercise: { name: "Gratitude Amplifier", duration_seconds: 60, steps: ["Close your eyes", "Think of 3 things you're grateful for", "Smile and breathe deeply"], benefits: "Extends positive emotions" }
+          },
+          'calm': {
+            prompt: "Your inner peace is a gift. Let's deepen this serene state and carry it through your day.",
+            exercise: { name: "Ocean Breath", duration_seconds: 90, steps: ["Inhale slowly for 4 counts", "Hold for 4 counts", "Exhale for 6 counts", "Repeat 5 times"], benefits: "Deepens relaxation" }
+          },
+          'anxious': {
+            prompt: "I sense you're carrying some tension. Remember: you've overcome challenges before, and you will again. Let's ground ourselves.",
+            exercise: { name: "5-4-3-2-1 Grounding", duration_seconds: 120, steps: ["Name 5 things you see", "4 things you hear", "3 things you feel", "2 things you smell", "1 thing you taste"], benefits: "Reduces anxiety instantly" }
+          },
+          'sad': {
+            prompt: "It's okay to feel this way. Your feelings are valid, and this moment will pass. Be gentle with yourself today.",
+            exercise: { name: "Self-Compassion Pause", duration_seconds: 60, steps: ["Place hand on heart", "Say 'I'm doing my best'", "Take 3 deep breaths", "Acknowledge your strength"], benefits: "Builds emotional resilience" }
+          },
+          'angry': {
+            prompt: "Anger often tells us something important. Let's channel this energy constructively while staying centered.",
+            exercise: { name: "Cool Down Breath", duration_seconds: 90, steps: ["Breathe in through nose for 4", "Hold for 2", "Exhale through mouth for 8", "Repeat until calm"], benefits: "Releases tension safely" }
+          },
+          'neutral': {
+            prompt: "A balanced state is powerful. This is a perfect time to set intentions and cultivate positivity.",
+            exercise: { name: "Mindful Check-in", duration_seconds: 60, steps: ["Scan your body for tension", "Notice your thoughts without judgment", "Set one positive intention", "Smile gently"], benefits: "Increases self-awareness" }
+          }
+        };
+        return tips[mood] || tips['neutral'];
+      };
+
+      const getMindCoachTips = () => {
+        const mood = (payload?.current_mood as string) || 'neutral';
+        const hour = (payload?.current_hour as number) || 12;
+        const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+        
+        const tips = [
+          { type: "hydration", icon: "💧", title: "Stay Hydrated", message: "A glass of water refreshes both body and mind. Take a sip!" },
+          { type: "break", icon: "🚶", title: "Movement Break", message: "Stand up, stretch, or take a short walk. Your body will thank you." },
+          { type: "focus", icon: "🎯", title: "Focus Session", message: "Try working in 25-minute focused blocks with 5-minute breaks." }
+        ];
+
+        if (mood === 'anxious' || mood === 'sad') {
+          tips.unshift({ type: "compassion", icon: "💜", title: "Be Gentle", message: "Prioritize your wellbeing today. It's okay to take things slower." });
+        }
+
+        return {
+          productivity_tips: tips,
+          mental_check: mood === 'happy' ? "You're in a great headspace! Let's make the most of it." : 
+                        mood === 'anxious' ? "I notice you might be feeling stressed. Remember to breathe." :
+                        "Checking in with yourself is a powerful habit. Keep it up!",
+          time_greeting: greeting
+        };
+      };
+
       const mockResponses: Record<WalkerName, unknown> = {
         'MoodLogger': {
-          analysis: { emotion: "calm", intensity: 7, triggers: ["meditation"], sentiment: "positive" },
-          response: "It's wonderful that you're taking time for yourself. Keeping this balance is key to your wellbeing.",
+          analysis: { emotion: "calm", intensity: 7, triggers: ["self-reflection"], sentiment: "positive" },
+          response: "Thank you for sharing. Taking time to acknowledge your feelings is a beautiful act of self-care. You're doing great! 🌟",
           emotion: { name: "calm", intensity: 7, color: "#98FB98" }
         },
         'TrendAnalyzer': {
           patterns: {
-            recurring_emotions: ["anxious", "calm"],
+            recurring_emotions: ["calm", "happy"],
             weekly_trend: "improving",
-            recommendations: ["Morning breathing", "Evening walk", "Gratitude journal"]
+            recommendations: ["Continue your mindfulness practice", "Try morning gratitude journaling", "Celebrate small wins"]
           }
         },
-        'SuggestionGenerator': {
-          prompt: "What small moment today brought you peace?",
-          exercise: null
-        },
+        'SuggestionGenerator': getMoodAwareTip(),
         'JournalSaver': {
           entry_id: String(Date.now()),
-          mood_change: 0,
-          response: "Thank you for sharing your thoughts."
+          mood_change: 1,
+          response: "Your thoughts are valuable. Writing helps process emotions and gain clarity. Keep journaling! ✨"
         },
-        'MindCoach': {
-          productivity_tips: [
-            { type: "general", icon: "✨", title: "Stay Focused", message: "You're doing great! Keep up the good work." }
-          ],
-          mental_check: "I see you're checking in. That's a great habit!",
-          time_greeting: "Good day!"
-        }
+        'MindCoach': getMindCoachTips()
       };
       
       const fallback = mockResponses[walkerName] as WalkerResponse<T>;
