@@ -4,7 +4,7 @@ import { useSpeechToText, useTextToSpeech } from '../hooks/useSpeech';
 import type { UserContext, Emotion } from '../types';
 import type { MoodEntry } from '../App';
 
-// Modern animated emoji components
+// Animated emoji component
 const AnimatedEmoji: React.FC<{ name: string; size?: number }> = ({ name, size = 48 }) => {
   const style: React.CSSProperties = {
     fontSize: size,
@@ -12,41 +12,31 @@ const AnimatedEmoji: React.FC<{ name: string; size?: number }> = ({ name, size =
     lineHeight: 1,
   };
 
-  switch (name) {
-    case 'happy':
-      return <span style={{ ...style, animation: 'bounce 1s ease infinite' }}>😊</span>;
-    case 'calm':
-      return <span style={{ ...style, animation: 'float 3s ease-in-out infinite' }}>😌</span>;
-    case 'neutral':
-      return <span style={style}>😐</span>;
-    case 'anxious':
-      return <span style={{ ...style, animation: 'shake 0.5s ease infinite' }}>😰</span>;
-    case 'sad':
-      return (
-        <span style={{ ...style, position: 'relative' }}>
-          😢
-          <span style={{
-            position: 'absolute',
-            top: '100%',
-            left: '50%',
-            fontSize: size * 0.3,
-            animation: 'tearDrop 1.5s ease-in-out infinite',
-          }}>💧</span>
-        </span>
-      );
-    case 'angry':
-      return <span style={{ ...style, animation: 'pulse 0.8s ease infinite' }}>😠</span>;
-    default:
-      return <span style={style}>😊</span>;
-  }
+  const animations: Record<string, string> = {
+    happy: 'bounce 1s ease infinite',
+    calm: 'float 3s ease-in-out infinite',
+    anxious: 'shake 0.5s ease infinite',
+    angry: 'pulse 0.8s ease infinite',
+  };
+
+  return (
+    <span style={{ ...style, animation: animations[name] || undefined }}>
+      {name === 'happy' && '😊'}
+      {name === 'calm' && '😌'}
+      {name === 'neutral' && '😐'}
+      {name === 'anxious' && '😰'}
+      {name === 'sad' && '😢'}
+      {name === 'angry' && '😠'}
+    </span>
+  );
 };
 
 const MOODS: Emotion[] = [
-  { name: 'happy', emoji: '😊', color: '#3b82f6' },
-  { name: 'calm', emoji: '😌', color: '#22c55e' },
+  { name: 'happy', emoji: '😊', color: '#22c55e' },
+  { name: 'calm', emoji: '😌', color: '#3b82f6' },
   { name: 'neutral', emoji: '😐', color: '#6b7280' },
   { name: 'anxious', emoji: '😰', color: '#f59e0b' },
-  { name: 'sad', emoji: '😢', color: '#3b82f6' },
+  { name: 'sad', emoji: '😢', color: '#6366f1' },
   { name: 'angry', emoji: '😠', color: '#ef4444' },
 ];
 
@@ -58,9 +48,17 @@ interface MoodWheelProps {
   onNavigateToJournal?: () => void;
 }
 
-const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMoodLogged, moodHistory, onNavigateToJournal }) => {
+const MoodWheel: React.FC<MoodWheelProps> = ({ 
+  userContext, 
+  onMoodSelect, 
+  onMoodLogged, 
+  moodHistory, 
+  onNavigateToJournal 
+}) => {
   const [selectedMood, setSelectedMood] = useState<Emotion | null>(null);
   const [note, setNote] = useState('');
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<MoodEntry | null>(null);
   const { spawn, loading, data } = useJac('MoodLogger');
   
@@ -76,12 +74,13 @@ const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMood
     }
   }, [transcript, resetTranscript]);
 
-  // Auto-speak AI response
+  // Show modal when AI response arrives
   useEffect(() => {
-    if (data?.response && ttsSupported) {
-      speak(data.response);
+    if (data?.response) {
+      setShowSuccess(false);
+      setShowAIModal(true);
     }
-  }, [data?.response, speak, ttsSupported]);
+  }, [data?.response]);
 
   const handleMoodClick = (mood: Emotion) => {
     setSelectedMood(mood);
@@ -90,6 +89,8 @@ const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMood
 
   const handleLog = async () => {
     if (!selectedMood) return;
+    
+    setShowSuccess(true);
     
     const result = await spawn({
       user_id: userContext.userId,
@@ -127,11 +128,13 @@ const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMood
      data.response.toLowerCase().includes('express'));
 
   return (
-    <div className="mood-wheel-container">
-      {/* Left Side: Mood Selection */}
-      <div className="card mood-input-section">
-        <h2>How are you feeling?</h2>
-        <p className="subtitle">Select your mood and add a note</p>
+    <div className="mood-wheel-section">
+      {/* Mood Input Card */}
+      <div className="card mood-input-card">
+        <div className="card-header">
+          <h2>How are you feeling?</h2>
+          <p className="subtitle">Select your mood and add a note</p>
+        </div>
         
         <div className="mood-grid">
           {MOODS.map((mood) => (
@@ -139,9 +142,12 @@ const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMood
               key={mood.name}
               className={`mood-btn ${selectedMood?.name === mood.name ? 'selected' : ''}`}
               onClick={() => handleMoodClick(mood)}
-              style={{ borderColor: selectedMood?.name === mood.name ? mood.color : 'transparent' }}
+              style={{ 
+                '--mood-color': mood.color,
+                borderColor: selectedMood?.name === mood.name ? mood.color : 'transparent'
+              } as React.CSSProperties}
             >
-              <AnimatedEmoji name={mood.name} size={36} />
+              <span className="mood-emoji">{mood.emoji}</span>
               <span className="mood-label">{mood.name}</span>
             </button>
           ))}
@@ -151,7 +157,7 @@ const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMood
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder={isListening ? "🎤 Listening... speak now" : "Add a note about how you're feeling..."}
+            placeholder={isListening ? "🎤 Listening... speak now" : "What's on your mind? (optional)"}
             rows={3}
             className={isListening ? 'listening' : ''}
           />
@@ -159,7 +165,7 @@ const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMood
             <button 
               className={`voice-btn ${isListening ? 'active' : ''}`}
               onClick={toggleVoice}
-              title={isListening ? "Stop listening" : "Start voice input"}
+              title={isListening ? "Stop listening" : "Speak your thoughts"}
             >
               {isListening ? '🔴' : '🎤'}
             </button>
@@ -167,98 +173,124 @@ const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMood
         </div>
 
         <button 
-          className="primary-btn" 
+          className="primary-btn log-btn" 
           onClick={handleLog} 
           disabled={!selectedMood || loading}
         >
-          {loading ? '✨ Processing...' : '📝 Log Mood'}
+          {loading ? (
+            <span className="btn-loading">
+              <span className="spinner"></span> Processing...
+            </span>
+          ) : (
+            <>
+              <span>✨</span> Log Mood
+            </>
+          )}
         </button>
+
+        {/* Success message */}
+        {showSuccess && !data && (
+          <div className="success-toast fade-in">
+            ✓ Mood logged! Getting AI response...
+          </div>
+        )}
 
         {/* Mood History Strip */}
         {moodHistory.length > 0 && (
           <div className="mood-history">
-            <h3>Today's Check-ins</h3>
+            <h3>Recent Check-ins</h3>
             <div className="history-strip">
-              {moodHistory.slice(0, 8).map((entry, i) => (
-                <div 
+              {moodHistory.slice(0, 6).map((entry, i) => (
+                <button 
                   key={i} 
                   className="history-item"
-                  style={{ borderColor: entry.emotion.color }}
+                  style={{ '--mood-color': entry.emotion.color } as React.CSSProperties}
                   onClick={() => setSelectedEntry(entry)}
                 >
                   <span className="history-emoji">{entry.emotion.emoji}</span>
                   <span className="history-time">{formatTime(entry.timestamp)}</span>
-                </div>
+                </button>
               ))}
             </div>
           </div>
         )}
       </div>
 
-      {/* Right Side: AI Response */}
-      <div className="card ai-response-section">
-        <h2>🤖 SerenityAI Says</h2>
-        
-        {data ? (
-          <div className="ai-response-content fade-in">
-            <div className="ai-response-bubble">
-              <div className="ai-avatar">🧘</div>
-              <div className="ai-text">
-                <p>{data.response}</p>
+      {/* AI Response Modal */}
+      {showAIModal && data && (
+        <div className="modal-overlay" onClick={() => setShowAIModal(false)}>
+          <div className="ai-response-modal slide-up" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowAIModal(false)}>×</button>
+            
+            <div className="modal-header ai-modal-header">
+              <div className="ai-avatar-large">🧘</div>
+              <div>
+                <h2>SerenityAI</h2>
+                <p className="ai-subtitle">Your wellness companion</p>
               </div>
             </div>
-
-            {ttsSupported && (
-              <button 
-                className="tts-btn"
-                onClick={() => isSpeaking ? window.speechSynthesis.cancel() : speak(data.response)}
-              >
-                {isSpeaking ? '🔇 Stop' : '🔊 Listen'}
-              </button>
-            )}
-
-            {data.emotion && (
-              <div className="detected-mood" style={{ borderColor: data.emotion.color }}>
-                <span>Detected: </span>
-                <strong style={{ color: data.emotion.color }}>{data.emotion.name}</strong>
-                <span className="intensity"> (intensity: {data.emotion.intensity}/10)</span>
+            
+            <div className="modal-body">
+              <div className="ai-message">
+                <p>{data.response}</p>
               </div>
-            )}
 
-            {shouldShowJournalButton && onNavigateToJournal && (
-              <button 
-                className="journal-redirect-btn"
-                onClick={onNavigateToJournal}
-              >
-                📝 Start Journaling
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="ai-placeholder">
-            <div className="placeholder-icon">💬</div>
-            <p>Log a mood to receive personalized support</p>
-            <p className="placeholder-hint">Your AI companion is here to help!</p>
-          </div>
-        )}
-      </div>
+              {data.emotion && (
+                <div className="detected-mood-tag" style={{ backgroundColor: `${data.emotion.color}20`, borderColor: data.emotion.color }}>
+                  <span>Detected: </span>
+                  <strong style={{ color: data.emotion.color }}>{data.emotion.name}</strong>
+                  <span className="intensity"> · Intensity {data.emotion.intensity}/10</span>
+                </div>
+              )}
 
-      {/* Modal for Mood Details */}
+              <div className="modal-actions">
+                {ttsSupported && (
+                  <button 
+                    className="action-btn"
+                    onClick={() => isSpeaking ? window.speechSynthesis.cancel() : speak(data.response)}
+                  >
+                    {isSpeaking ? '🔇 Stop' : '🔊 Listen'}
+                  </button>
+                )}
+                
+                {shouldShowJournalButton && onNavigateToJournal && (
+                  <button 
+                    className="action-btn primary"
+                    onClick={() => {
+                      setShowAIModal(false);
+                      onNavigateToJournal();
+                    }}
+                  >
+                    📝 Start Journaling
+                  </button>
+                )}
+                
+                <button 
+                  className="action-btn"
+                  onClick={() => setShowAIModal(false)}
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* History Detail Modal */}
       {selectedEntry && (
         <div className="modal-overlay" onClick={() => setSelectedEntry(null)}>
-          <div 
-            className="mood-detail-modal fade-in" 
-            onClick={(e) => e.stopPropagation()}
-            style={{ borderColor: selectedEntry.emotion.color }}
-          >
+          <div className="mood-detail-modal slide-up" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setSelectedEntry(null)}>×</button>
-            <div className="modal-header" style={{ background: `linear-gradient(135deg, ${selectedEntry.emotion.color}20, transparent)` }}>
-              <AnimatedEmoji name={selectedEntry.emotion.name} size={48} />
+            
+            <div className="modal-header" style={{ background: `linear-gradient(135deg, ${selectedEntry.emotion.color}15, transparent)` }}>
+              <AnimatedEmoji name={selectedEntry.emotion.name} size={56} />
               <div>
-                <h3 style={{ margin: 0, textTransform: 'capitalize' }}>{selectedEntry.emotion.name}</h3>
+                <h3 style={{ textTransform: 'capitalize' }}>{selectedEntry.emotion.name}</h3>
                 <p className="modal-time">{selectedEntry.timestamp.toLocaleString()}</p>
               </div>
             </div>
+            
             <div className="modal-body">
               <div className="modal-section">
                 <h4>📝 Your Note</h4>
@@ -266,7 +298,7 @@ const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMood
               </div>
               {selectedEntry.aiResponse && (
                 <div className="modal-section ai-section">
-                  <h4>🤖 AI Response</h4>
+                  <h4>🧘 AI Response</h4>
                   <p>{selectedEntry.aiResponse}</p>
                 </div>
               )}
