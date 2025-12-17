@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import MoodWheel from "./components/MoodWheel";
 import JournalEntry from "./components/JournalEntry";
 import EmotionGraph from "./components/EmotionGraph";
@@ -6,6 +7,7 @@ import InsightsTimeline from "./components/InsightsTimeline";
 import TipsPanel from "./components/TipsPanel";
 import About from "./components/About";
 import Footer from "./components/Footer";
+import AuthModal from "./components/AuthModal";
 import type { UserContext, Emotion } from "./types";
 import "./styles/index.css";
 
@@ -23,12 +25,14 @@ export interface JournalEntryData {
   moodChange: number;
 }
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
+  const { user, signOut, loading: authLoading, isConfigured } = useAuth();
   const [activeTab, setActiveTab] = useState<"log" | "journal" | "insights" | "about">("log");
-  const [userContext] = useState<UserContext>({ userId: "demo-user-1" });
+  const [userContext] = useState<UserContext>({ userId: user?.id || "demo-user-1" });
   const [selectedMood, setSelectedMood] = useState<Emotion | null>(null);
   const [moodHistory, setMoodHistory] = useState<MoodEntry[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntryData[]>([]);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const handleMoodLogged = (entry: MoodEntry) => {
     setMoodHistory((prev) => [entry, ...prev].slice(0, 20));
@@ -41,6 +45,15 @@ const App: React.FC = () => {
   const navigateToJournal = () => {
     setActiveTab("journal");
   };
+
+  if (authLoading) {
+    return (
+      <div className="app-loading">
+        <div className="loading-spinner" />
+        <p>Loading SerenityAI...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="app-wrapper">
@@ -76,6 +89,18 @@ const App: React.FC = () => {
               ℹ️ About
             </button>
           </nav>
+          <div className="auth-section">
+            {user ? (
+              <div className="user-menu">
+                <span className="user-email">{user.email}</span>
+                <button className="auth-btn" onClick={() => signOut()}>Sign Out</button>
+              </div>
+            ) : (
+              <button className="auth-btn primary" onClick={() => setShowAuthModal(true)}>
+                {isConfigured ? '🔐 Sign In' : '👤 Guest Mode'}
+              </button>
+            )}
+          </div>
         </header>
 
         <main className="app-content">
@@ -112,7 +137,17 @@ const App: React.FC = () => {
         </main>
       </div>
       <Footer />
+
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 };
 

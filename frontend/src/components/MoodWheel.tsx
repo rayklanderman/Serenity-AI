@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useJac } from '../hooks/useJac';
+import { useSpeechToText, useTextToSpeech } from '../hooks/useSpeech';
 import type { UserContext, Emotion } from '../types';
 import type { MoodEntry } from '../App';
 
@@ -62,6 +63,25 @@ const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMood
   const [note, setNote] = useState('');
   const [selectedEntry, setSelectedEntry] = useState<MoodEntry | null>(null);
   const { spawn, loading, data } = useJac('MoodLogger');
+  
+  // Voice features
+  const { isListening, transcript, startListening, stopListening, resetTranscript, isSupported: sttSupported } = useSpeechToText();
+  const { speak, isSpeaking, isSupported: ttsSupported } = useTextToSpeech();
+
+  // Append voice transcript to note
+  useEffect(() => {
+    if (transcript) {
+      setNote(prev => prev + (prev ? ' ' : '') + transcript);
+      resetTranscript();
+    }
+  }, [transcript, resetTranscript]);
+
+  // Auto-speak AI response
+  useEffect(() => {
+    if (data?.response && ttsSupported) {
+      speak(data.response);
+    }
+  }, [data?.response, speak, ttsSupported]);
 
   const handleMoodClick = (mood: Emotion) => {
     setSelectedMood(mood);
@@ -86,6 +106,14 @@ const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMood
       };
       onMoodLogged?.(entry);
       setNote('');
+    }
+  };
+
+  const toggleVoice = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
     }
   };
 
@@ -119,12 +147,24 @@ const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMood
           ))}
         </div>
 
-        <textarea
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder="Add a note about how you're feeling..."
-          rows={3}
-        />
+        <div className="note-input-wrapper">
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder={isListening ? "🎤 Listening... speak now" : "Add a note about how you're feeling..."}
+            rows={3}
+            className={isListening ? 'listening' : ''}
+          />
+          {sttSupported && (
+            <button 
+              className={`voice-btn ${isListening ? 'active' : ''}`}
+              onClick={toggleVoice}
+              title={isListening ? "Stop listening" : "Start voice input"}
+            >
+              {isListening ? '🔴' : '🎤'}
+            </button>
+          )}
+        </div>
 
         <button 
           className="primary-btn" 
@@ -167,6 +207,15 @@ const MoodWheel: React.FC<MoodWheelProps> = ({ userContext, onMoodSelect, onMood
                 <p>{data.response}</p>
               </div>
             </div>
+
+            {ttsSupported && (
+              <button 
+                className="tts-btn"
+                onClick={() => isSpeaking ? window.speechSynthesis.cancel() : speak(data.response)}
+              >
+                {isSpeaking ? '🔇 Stop' : '🔊 Listen'}
+              </button>
+            )}
 
             {data.emotion && (
               <div className="detected-mood" style={{ borderColor: data.emotion.color }}>
