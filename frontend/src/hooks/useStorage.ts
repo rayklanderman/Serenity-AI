@@ -1,30 +1,51 @@
 import { useState, useCallback } from 'react';
-import { supabase, DbMood, DbJournalEntry, isSupabaseConfigured } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+
+// Helper to get current day name
+const getDayOfWeek = () => new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
 // Hook for mood persistence
 export const useMoodStorage = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const saveMood = useCallback(async (mood: Omit<DbMood, 'id' | 'user_id' | 'created_at'>) => {
-    if (!isSupabaseConfigured() || !user) return null;
+  const saveMood = useCallback(async (mood: {
+    emotion: string;
+    emoji: string;
+    color?: string;
+    intensity?: number;
+    note?: string;
+    ai_response?: string;
+    triggers?: string[];
+  }) => {
+    if (!isSupabaseConfigured() || !user) {
+      console.log('[MoodStorage] Skipping save - not configured or no user');
+      return null;
+    }
     
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('moods')
+        .from('mood_logs')
         .insert({
           user_id: user.id,
-          ...mood
+          mood_name: mood.emotion,
+          emoji: mood.emoji,
+          intensity: mood.intensity || 5,
+          note: mood.note || '',
+          ai_response: mood.ai_response || '',
+          day_of_week: getDayOfWeek(),
+          hour_of_day: new Date().getHours()
         })
         .select()
         .single();
 
       if (error) throw error;
+      console.log('[MoodStorage] Saved mood:', data);
       return data;
     } catch (err) {
-      console.error('Error saving mood:', err);
+      console.error('[MoodStorage] Error saving mood:', err);
       return null;
     } finally {
       setLoading(false);
@@ -37,7 +58,7 @@ export const useMoodStorage = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('moods')
+        .from('mood_logs')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
@@ -46,7 +67,7 @@ export const useMoodStorage = () => {
       if (error) throw error;
       return data || [];
     } catch (err) {
-      console.error('Error fetching moods:', err);
+      console.error('[MoodStorage] Error fetching moods:', err);
       return [];
     } finally {
       setLoading(false);
@@ -58,7 +79,7 @@ export const useMoodStorage = () => {
     
     try {
       const { data, error } = await supabase
-        .from('moods')
+        .from('mood_logs')
         .select('*')
         .eq('user_id', user.id)
         .gte('created_at', startDate.toISOString())
@@ -68,7 +89,7 @@ export const useMoodStorage = () => {
       if (error) throw error;
       return data || [];
     } catch (err) {
-      console.error('Error fetching moods by date:', err);
+      console.error('[MoodStorage] Error fetching moods by date:', err);
       return [];
     }
   }, [user]);
@@ -81,8 +102,17 @@ export const useJournalStorage = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const saveEntry = useCallback(async (entry: Omit<DbJournalEntry, 'id' | 'user_id' | 'created_at'>) => {
-    if (!isSupabaseConfigured() || !user) return null;
+  const saveEntry = useCallback(async (entry: {
+    content: string;
+    mood_before?: string;
+    mood_before_intensity?: number;
+    ai_insight?: string;
+    mood_change?: number;
+  }) => {
+    if (!isSupabaseConfigured() || !user) {
+      console.log('[JournalStorage] Skipping save - not configured or no user');
+      return null;
+    }
     
     setLoading(true);
     try {
@@ -90,15 +120,22 @@ export const useJournalStorage = () => {
         .from('journal_entries')
         .insert({
           user_id: user.id,
-          ...entry
+          content: entry.content,
+          mood_before: entry.mood_before || 'neutral',
+          mood_before_intensity: entry.mood_before_intensity || 5,
+          ai_insight: entry.ai_insight || '',
+          mood_change: entry.mood_change || 0,
+          day_of_week: getDayOfWeek(),
+          hour_of_day: new Date().getHours()
         })
         .select()
         .single();
 
       if (error) throw error;
+      console.log('[JournalStorage] Saved entry:', data);
       return data;
     } catch (err) {
-      console.error('Error saving journal entry:', err);
+      console.error('[JournalStorage] Error saving journal entry:', err);
       return null;
     } finally {
       setLoading(false);
@@ -120,7 +157,7 @@ export const useJournalStorage = () => {
       if (error) throw error;
       return data || [];
     } catch (err) {
-      console.error('Error fetching journal entries:', err);
+      console.error('[JournalStorage] Error fetching journal entries:', err);
       return [];
     } finally {
       setLoading(false);
@@ -129,3 +166,4 @@ export const useJournalStorage = () => {
 
   return { saveEntry, getEntries, loading };
 };
+

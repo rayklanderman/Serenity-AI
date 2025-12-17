@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useJac } from '../hooks/useJac';
+import { useMoodStorage } from '../hooks/useStorage';
 import { useSpeechToText, useTextToSpeech } from '../hooks/useSpeech';
 import { motion } from 'framer-motion';
 import type { UserContext, Emotion } from '../types';
@@ -78,6 +79,7 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
   const [showSuccess, setShowSuccess] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<MoodEntry | null>(null);
   const { spawn, loading, data } = useJac('MoodLogger');
+  const { saveMood } = useMoodStorage();
   
   // Voice features
   const { isListening, transcript, startListening, stopListening, resetTranscript, isSupported: sttSupported } = useSpeechToText();
@@ -124,6 +126,16 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
         aiResponse: result.response
       };
       onMoodLogged?.(entry);
+      
+      // Save to Supabase for logged-in users
+      saveMood({
+        emotion: selectedMood.name,
+        emoji: selectedMood.emoji,
+        intensity: 7,
+        note: entry.note,
+        ai_response: result.response || ''
+      });
+      
       setNote('');
     }
   };
