@@ -109,13 +109,20 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS for frontend
+# CORS for frontend - explicitly allow production domains
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://serenity-ai.vercel.app",
+        "https://serenity-ai-gules.vercel.app",
+        "https://*.vercel.app",
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # =====================================================
