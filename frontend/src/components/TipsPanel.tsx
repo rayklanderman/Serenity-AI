@@ -28,6 +28,9 @@ const TipsPanel: React.FC<TipsPanelProps> = ({ userContext, currentMood }) => {
   };
 
   useEffect(() => {
+    // Only fetch personalized tips AFTER user has selected a mood
+    if (!currentMood) return;
+    
     if (mode === 'mindfulness') {
       handleGetTip();
     } else {
@@ -171,13 +174,25 @@ const TipsPanel: React.FC<TipsPanelProps> = ({ userContext, currentMood }) => {
           )}
         </AnimatePresence>
 
-        {/* No data placeholder */}
-        {((mode === 'mindfulness' && !suggestionData) || (mode === 'coach' && !coachData)) && !loading && (
+        {/* Default welcome when no mood selected */}
+        {!currentMood && !loading && (
+          <div className="welcome-message">
+            <p className="welcome-text">
+              {mode === 'mindfulness' 
+                ? '🌿 Welcome! Log your mood using the wheel to receive personalized mindfulness tips.'
+                : '🎯 Ready to boost your focus? Log your current mood to get personalized coaching.'
+              }
+            </p>
+            <div className="quick-tips">
+              <p><strong>Quick Tip:</strong> Take 3 deep breaths and tune into how you're feeling right now.</p>
+            </div>
+          </div>
+        )}
+
+        {/* No data placeholder (after mood selected but data loading/failed) */}
+        {currentMood && ((mode === 'mindfulness' && !suggestionData) || (mode === 'coach' && !coachData)) && !loading && (
           <p className="placeholder-text">
-            {mode === 'mindfulness' 
-              ? (currentMood ? `Getting personalized ${currentMood.name} tips...` : 'Select a mood or click for uplifting suggestions')
-              : 'Click for productivity coaching based on your mental state'
-            }
+            Getting personalized {mode === 'mindfulness' ? 'tips' : 'coaching'} for feeling <strong>{currentMood.name}</strong>...
           </p>
         )}
       </motion.div>

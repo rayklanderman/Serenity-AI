@@ -165,6 +165,39 @@ body {
   width: 100%;
 }
 
+/* Console content container - matches landing page layout */
+.console-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  flex: 1;
+  width: 100%;
+}
+
+/* Welcome message for TipsPanel */
+.welcome-message {
+  text-align: center;
+  padding: var(--space-6);
+}
+
+.welcome-message .welcome-text {
+  font-size: 1.1rem;
+  color: var(--gray-600);
+  margin: 0 0 var(--space-4) 0;
+}
+
+.welcome-message .quick-tips {
+  background: linear-gradient(135deg, var(--primary-glow) 0%, var(--gray-100) 100%);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.welcome-message .quick-tips p {
+  margin: 0;
+  color: var(--gray-700);
+  font-size: var(--font-size-sm);
+}
+
 .checkin-layout {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
