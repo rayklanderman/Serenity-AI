@@ -9,6 +9,8 @@ interface AuthContextType {
   signUp: (email: string, password: string, displayName?: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  updatePassword: (newPassword: string) => Promise<void>;
   isConfigured: boolean;
   isGuest: boolean;
 }
@@ -57,6 +59,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (event === 'SIGNED_IN' && session) {
         console.log('User signed in:', session.user?.email);
       }
+      
+      // Handle password recovery
+      if (event === 'PASSWORD_RECOVERY') {
+        console.log('Password recovery mode activated');
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -85,6 +92,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (error) throw error;
   };
 
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${getAppUrl()}?reset=true`
+    });
+    if (error) throw error;
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) throw error;
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -92,7 +111,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       loading, 
       signUp, 
       signIn, 
-      signOut, 
+      signOut,
+      resetPassword,
+      updatePassword,
       isConfigured,
       isGuest 
     }}>
@@ -108,3 +129,4 @@ export const useAuth = () => {
   }
   return context;
 };
+
