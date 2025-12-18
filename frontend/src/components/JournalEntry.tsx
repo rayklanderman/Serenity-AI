@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useJac } from '../hooks/useJac';
+import { useJournalStorage } from '../hooks/useStorage';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { UserContext, Emotion } from '../types';
 import type { JournalEntryData } from '../App';
@@ -17,6 +18,7 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [latestInsight, setLatestInsight] = useState<string | null>(null);
   const { spawn, loading, data } = useJac('JournalSaver');
+  const { saveEntry } = useJournalStorage();
 
   const handleSave = async () => {
     if (!content.trim()) return;
@@ -42,6 +44,16 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
         aiInsight: result.response,
         moodChange: result.mood_change || 0
       });
+      
+      // Save to Supabase for logged-in users
+      saveEntry({
+        content,
+        mood_before: currentMood?.name,
+        mood_before_intensity: moodBefore,
+        ai_insight: result.response,
+        mood_change: result.mood_change || 0
+      });
+      
       setContent('');
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);

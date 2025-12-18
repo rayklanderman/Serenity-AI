@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import ErrorBoundary from "./components/ErrorBoundary";
 import LandingPage from "./components/LandingPage";
 import MoodWheel from "./components/MoodWheel";
 import JournalEntry from "./components/JournalEntry";
@@ -33,7 +34,15 @@ type ConsoleTab = "log" | "journal" | "insights";
 const AppContent: React.FC = () => {
   const { user, signOut, loading: authLoading, isConfigured } = useAuth();
   const [currentPage, setCurrentPage] = useState<Page>("landing");
-  const [activeTab, setActiveTab] = useState<ConsoleTab>("log");
+  const [activeTab, setActiveTab] = useState<ConsoleTab>(() => {
+    const saved = sessionStorage.getItem('serenity-active-tab');
+    return (saved === 'log' || saved === 'journal' || saved === 'insights') ? saved : 'log';
+  });
+
+  // Persist active tab to sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem('serenity-active-tab', activeTab);
+  }, [activeTab]);
   const [userContext] = useState<UserContext>({ userId: user?.id || "demo-user-1" });
   const [selectedMood, setSelectedMood] = useState<Emotion | null>(null);
   const [moodHistory, setMoodHistory] = useState<MoodEntry[]>([]);
@@ -363,7 +372,9 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <AppContent />
+      <ErrorBoundary>
+        <AppContent />
+      </ErrorBoundary>
     </AuthProvider>
   );
 };
