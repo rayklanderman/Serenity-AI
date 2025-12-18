@@ -2814,3 +2814,448 @@ textarea:focus {
   word-break: break-word;
   margin: var(--space-2) 0;
 }
+
+/* =====================================================
+   MIND PLANNER
+   ===================================================== */
+.mind-planner {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.planner-header {
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+.planner-header h2 {
+  font-size: 1.75rem;
+  margin: 0 0 var(--space-2) 0;
+}
+
+.planner-steps {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.step-indicator {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  background: var(--gray-200);
+  color: var(--gray-500);
+  transition: all var(--transition-base);
+}
+
+.step-indicator.active {
+  background: var(--primary-glow);
+  color: var(--primary);
+}
+
+.step-indicator.current {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 0 0 4px var(--primary-glow);
+}
+
+.planner-step {
+  padding: var(--space-4);
+}
+
+.planner-step h3 {
+  text-align: center;
+  margin: 0 0 var(--space-2) 0;
+  font-size: 1.25rem;
+}
+
+.step-hint {
+  text-align: center;
+  color: var(--gray-500);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-4);
+}
+
+.occupation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.occupation-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--gray-100);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.occupation-btn:hover {
+  background: var(--gray-200);
+}
+
+.occupation-btn.selected {
+  background: var(--primary-glow);
+  border-color: var(--primary);
+}
+
+.occupation-btn .occ-icon {
+  font-size: 2rem;
+}
+
+.days-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.day-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--gray-300);
+  background: white;
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.day-btn:hover {
+  border-color: var(--primary);
+}
+
+.day-btn.selected {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.hours-section {
+  background: var(--gray-100);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.hours-section h4 {
+  margin: 0 0 var(--space-3) 0;
+  text-align: center;
+}
+
+.hours-inputs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.hours-inputs label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--gray-600);
+}
+
+.hours-inputs select {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+}
+
+.stress-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.stress-row {
+  display: grid;
+  grid-template-columns: 50px 1fr 40px;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.stress-row .day-label {
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.stress-row input[type="range"] {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--gray-200);
+  appearance: none;
+}
+
+.stress-row input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--stress-color, var(--primary));
+  cursor: pointer;
+}
+
+.stress-value {
+  font-weight: 700;
+  text-align: center;
+}
+
+.step-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.secondary-btn {
+  padding: var(--space-3) var(--space-5);
+  background: var(--gray-100);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-full);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.secondary-btn:hover {
+  background: var(--gray-200);
+}
+
+.generate-btn {
+  flex: 1;
+}
+
+.plan-days {
+  display: grid;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.plan-day-card {
+  background: var(--gray-50);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  border: 1px solid var(--gray-200);
+}
+
+.plan-day-card .day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.plan-day-card h4 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.stress-badge {
+  font-size: var(--font-size-xs);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  color: white;
+}
+
+.day-activities {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  background: white;
+  border-radius: var(--radius-sm);
+}
+
+.activity-item .act-icon {
+  font-size: 1.25rem;
+}
+
+.activity-item .act-details {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.activity-item .act-time {
+  font-size: var(--font-size-xs);
+  color: var(--gray-500);
+  background: var(--gray-100);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.activity-item .act-name {
+  font-weight: 500;
+}
+
+.activity-item .act-duration {
+  font-size: var(--font-size-xs);
+  color: var(--gray-500);
+}
+
+.day-affirmation {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  background: linear-gradient(135deg, var(--primary-glow) 0%, transparent 100%);
+  border-radius: var(--radius-sm);
+  font-style: italic;
+  color: var(--gray-700);
+  font-size: var(--font-size-sm);
+}
+
+/* =====================================================
+   TRIVIA GAMES
+   ===================================================== */
+.trivia-games {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.trivia-header {
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+.trivia-header h2 {
+  font-size: 1.75rem;
+  margin: 0 0 var(--space-2) 0;
+}
+
+.game-modes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.game-mode-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--gray-100);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.game-mode-btn:hover {
+  background: var(--gray-200);
+  transform: translateY(-2px);
+}
+
+.game-mode-btn.active {
+  background: var(--primary-glow);
+  border-color: var(--primary);
+}
+
+.game-mode-btn .mode-icon {
+  font-size: 2.5rem;
+}
+
+.game-mode-btn .mode-name {
+  font-weight: 600;
+}
+
+.trivia-question-card {
+  background: linear-gradient(135deg, var(--primary-glow) 0%, white 100%);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  text-align: center;
+  margin-bottom: var(--space-4);
+}
+
+.question-number {
+  font-size: var(--font-size-sm);
+  color: var(--gray-500);
+  margin-bottom: var(--space-2);
+}
+
+.question-text {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin: 0 0 var(--space-4) 0;
+}
+
+.answer-options {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.answer-btn {
+  padding: var(--space-3) var(--space-4);
+  background: white;
+  border: 2px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.answer-btn:hover {
+  border-color: var(--primary);
+  background: var(--primary-glow);
+}
+
+.answer-btn.correct {
+  border-color: var(--success);
+  background: var(--success-light);
+}
+
+.answer-btn.wrong {
+  border-color: var(--error);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.trivia-score {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-6);
+  padding: var(--space-4);
+  background: var(--gray-100);
+  border-radius: var(--radius-md);
+}
+
+.score-item {
+  text-align: center;
+}
+
+.score-item .score-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.score-item .score-label {
+  font-size: var(--font-size-sm);
+  color: var(--gray-500);
+}

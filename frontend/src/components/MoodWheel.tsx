@@ -149,7 +149,12 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
   };
 
   const formatTime = (date: Date) => {
-    return new Intl.DateTimeFormat('en', { hour: 'numeric', minute: '2-digit' }).format(date);
+    return new Intl.DateTimeFormat('en', { 
+      month: 'short', 
+      day: 'numeric',
+      hour: 'numeric', 
+      minute: '2-digit' 
+    }).format(date);
   };
 
   const shouldShowJournalButton = data?.response && 

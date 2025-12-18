@@ -65,6 +65,7 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
       weekday: 'short',
       month: 'short',
       day: 'numeric',
+      year: 'numeric',
       hour: 'numeric',
       minute: '2-digit'
     }).format(date);

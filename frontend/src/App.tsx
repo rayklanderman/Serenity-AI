@@ -7,6 +7,8 @@ import JournalEntry from "./components/JournalEntry";
 import EmotionGraph from "./components/EmotionGraph";
 import InsightsTimeline from "./components/InsightsTimeline";
 import TipsPanel from "./components/TipsPanel";
+import MindPlanner from "./components/MindPlanner";
+import TriviaGames from "./components/TriviaGames";
 import About from "./components/About";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
@@ -29,7 +31,7 @@ export interface JournalEntryData {
 }
 
 type Page = "landing" | "console" | "about" | "contact";
-type ConsoleTab = "log" | "journal" | "insights";
+type ConsoleTab = "log" | "journal" | "insights" | "planner" | "games";
 
 const AppContent: React.FC = () => {
   const { user, signOut, loading: authLoading, isConfigured } = useAuth();
@@ -271,6 +273,18 @@ const AppContent: React.FC = () => {
             >
               Insights
             </button>
+            <button
+              className={activeTab === "planner" ? "active" : ""}
+              onClick={() => setActiveTab("planner")}
+            >
+              Planner
+            </button>
+            <button
+              className={activeTab === "games" ? "active" : ""}
+              onClick={() => setActiveTab("games")}
+            >
+              Games
+            </button>
           </nav>
           
           {/* Mobile Hamburger */}
@@ -314,6 +328,8 @@ const AppContent: React.FC = () => {
                 <button onClick={() => { setActiveTab("log"); setMobileMenuOpen(false); }}>Check-in</button>
                 <button onClick={() => { setActiveTab("journal"); setMobileMenuOpen(false); }}>Journal</button>
                 <button onClick={() => { setActiveTab("insights"); setMobileMenuOpen(false); }}>Insights</button>
+                <button onClick={() => { setActiveTab("planner"); setMobileMenuOpen(false); }}>Planner</button>
+                <button onClick={() => { setActiveTab("games"); setMobileMenuOpen(false); }}>Games</button>
               </div>
               <div className="mobile-auth">
                 {user ? (
@@ -359,6 +375,14 @@ const AppContent: React.FC = () => {
               <EmotionGraph userContext={userContext} moodHistory={moodHistory} />
               <InsightsTimeline userContext={userContext} moodHistory={moodHistory} />
             </div>
+          )}
+
+          {activeTab === "planner" && (
+            <MindPlanner userContext={userContext} />
+          )}
+
+          {activeTab === "games" && (
+            <TriviaGames />
           )}
         </main>
       </div>
