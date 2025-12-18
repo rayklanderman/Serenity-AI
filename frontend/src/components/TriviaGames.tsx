@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useGameStorage } from '../hooks/usePlannerStorage';
 
 interface Question {
   id: number;
@@ -69,11 +70,24 @@ const TRIVIA_QUESTIONS: Question[] = [
 ];
 
 const TriviaGames: React.FC = () => {
+  const { saveScore, getHighScore } = useGameStorage();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
   const [gameComplete, setGameComplete] = useState(false);
+  const [highScore, setHighScore] = useState<number | null>(null);
+
+  // Load high score on mount
+  useEffect(() => {
+    const loadHighScore = async () => {
+      const result = await getHighScore('trivia');
+      if (result) {
+        setHighScore(result.score);
+      }
+    };
+    loadHighScore();
+  }, [getHighScore]);
 
   const question = TRIVIA_QUESTIONS[currentQuestion];
 
@@ -88,13 +102,20 @@ const TriviaGames: React.FC = () => {
     }
   };
 
-  const nextQuestion = () => {
+  const nextQuestion = async () => {
     if (currentQuestion < TRIVIA_QUESTIONS.length - 1) {
       setCurrentQuestion(prev => prev + 1);
       setSelectedAnswer(null);
       setShowResult(false);
     } else {
       setGameComplete(true);
+      // Save score to Supabase
+      await saveScore('trivia', score + (selectedAnswer === question.correctIndex ? 1 : 0), TRIVIA_QUESTIONS.length);
+      // Update high score if beaten
+      const finalScore = score + (selectedAnswer === question.correctIndex ? 1 : 0);
+      if (!highScore || finalScore > highScore) {
+        setHighScore(finalScore);
+      }
     }
   };
 
@@ -124,6 +145,13 @@ const TriviaGames: React.FC = () => {
         <h2>🧠 Mind Games</h2>
         <p className="subtitle">Test your wellness knowledge</p>
       </div>
+
+      {/* High Score Banner */}
+      {highScore !== null && (
+        <div className="high-score-banner">
+          🏆 Your Best: <span>{highScore}/{TRIVIA_QUESTIONS.length}</span>
+        </div>
+      )}
 
       {!gameComplete ? (
         <>

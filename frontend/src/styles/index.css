@@ -3259,3 +3259,215 @@ textarea:focus {
   font-size: var(--font-size-sm);
   color: var(--gray-500);
 }
+
+/* =====================================================
+   PLANNER CAROUSEL
+   ===================================================== */
+.plan-carousel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.carousel-arrow {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--gray-300);
+  background: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  flex-shrink: 0;
+}
+
+.carousel-arrow:hover {
+  border-color: var(--primary);
+  background: var(--primary-glow);
+}
+
+.carousel-content {
+  flex: 1;
+  overflow: hidden;
+  min-height: 320px;
+}
+
+.carousel-day-card {
+  background: linear-gradient(135deg, var(--primary-glow) 0%, white 100%);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  border: 1px solid var(--gray-200);
+}
+
+.carousel-day-card .day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.carousel-day-card h4 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--gray-900);
+}
+
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.carousel-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--gray-300);
+  background: white;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.carousel-dot:hover {
+  border-color: var(--primary);
+}
+
+.carousel-dot.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+/* Editable Activities */
+.activity-item.editable {
+  position: relative;
+}
+
+.activity-item .activity-actions {
+  display: flex;
+  gap: var(--space-1);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.activity-item:hover .activity-actions {
+  opacity: 1;
+}
+
+.activity-item .edit-btn,
+.activity-item .delete-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  transition: background var(--transition-base);
+}
+
+.activity-item .edit-btn:hover {
+  background: var(--primary-glow);
+}
+
+.activity-item .delete-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.add-activity-btn {
+  width: 100%;
+  padding: var(--space-3);
+  border: 2px dashed var(--gray-300);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--gray-500);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.add-activity-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-glow);
+}
+
+/* Edit Modal */
+.edit-modal {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  max-width: 400px;
+  width: 90%;
+  box-shadow: var(--shadow-xl);
+}
+
+.edit-modal h3 {
+  margin: 0 0 var(--space-4) 0;
+  text-align: center;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.edit-form label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--gray-700);
+}
+
+.edit-form input {
+  padding: var(--space-3);
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  transition: border-color var(--transition-base);
+}
+
+.edit-form input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.modal-buttons {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+.saving-indicator {
+  position: fixed;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  background: var(--primary);
+  color: white;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  animation: pulse 1s ease infinite;
+}
+
+/* High Score Display */
+.high-score-banner {
+  background: linear-gradient(135deg, var(--primary-glow) 0%, rgba(167, 139, 250, 0.1) 100%);
+  border: 1px solid var(--primary-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  text-align: center;
+  margin-bottom: var(--space-4);
+}
+
+.high-score-banner span {
+  font-weight: 700;
+  color: var(--primary);
+}

@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { usePlannerStorage } from '../hooks/usePlannerStorage';
+import { useAuth } from '../contexts/AuthContext';
 import type { UserContext } from '../types';
 
 interface MindPlannerProps {
@@ -14,6 +16,14 @@ const OCCUPATIONS = [
   { id: 'other', label: 'Other', icon: '✨' },
 ];
 
+interface Activity {
+  id: string;
+  time: string;
+  activity: string;
+  icon: string;
+  duration: string;
+}
+
 interface Schedule {
   occupation: string;
   workDays: string[];
@@ -22,18 +32,16 @@ interface Schedule {
   stressByDay: Record<string, number>;
 }
 
-interface WellnessPlan {
+interface DayPlan {
   day: string;
-  activities: Array<{
-    time: string;
-    activity: string;
-    icon: string;
-    duration: string;
-  }>;
+  activities: Activity[];
   affirmation: string;
 }
 
 const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) => {
+  const { user } = useAuth();
+  const { savePlan, getCurrentPlan, loading: storageLoading } = usePlannerStorage();
+  
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [schedule, setSchedule] = useState<Schedule>({
     occupation: '',
@@ -45,8 +53,36 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
       Friday: 5, Saturday: 3, Sunday: 2
     }
   });
-  const [plan, setPlan] = useState<WellnessPlan[] | null>(null);
+  const [plan, setPlan] = useState<DayPlan[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [currentDayIndex, setCurrentDayIndex] = useState(0);
+  const [editingActivity, setEditingActivity] = useState<{ dayIndex: number; actIndex: number } | null>(null);
+  const [editForm, setEditForm] = useState({ time: '', activity: '', duration: '' });
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addDayIndex, setAddDayIndex] = useState(0);
+
+  // Load existing plan on mount
+  useEffect(() => {
+    const loadPlan = async () => {
+      const savedPlan = await getCurrentPlan();
+      if (savedPlan) {
+        setSchedule(savedPlan.schedule_data as Schedule);
+        setPlan(savedPlan.plan_data as DayPlan[]);
+        setStep(4);
+      }
+    };
+    if (user) loadPlan();
+  }, [user, getCurrentPlan]);
+
+  // Set current day index to today
+  useEffect(() => {
+    const today = new Date().getDay();
+    // Convert Sunday=0 to Sunday=6 (our array is Monday-Sunday)
+    const index = today === 0 ? 6 : today - 1;
+    setCurrentDayIndex(index);
+  }, []);
+
+  const generateId = () => Math.random().toString(36).substr(2, 9);
 
   const toggleWorkDay = (day: string) => {
     setSchedule(prev => ({
@@ -66,56 +102,171 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
 
   const generatePlan = async () => {
     setLoading(true);
-    // For MVP, generate a sample plan
-    // In full version, this would call /walker/WellnessPlanner
-    setTimeout(() => {
-      const samplePlan: WellnessPlan[] = DAYS.map(day => {
-        const stress = schedule.stressByDay[day];
-        const isWorkDay = schedule.workDays.includes(day);
-        
-        return {
-          day,
-          activities: [
-            { 
-              time: '7:00 AM', 
-              activity: stress > 6 ? 'Gentle morning stretch' : 'Energizing yoga flow',
-              icon: '🧘',
-              duration: '15 min'
-            },
-            { 
-              time: isWorkDay ? '12:30 PM' : '10:00 AM', 
-              activity: 'Mindful breathing break',
-              icon: '🫁',
-              duration: '5 min'
-            },
-            { 
-              time: isWorkDay ? '6:00 PM' : '3:00 PM', 
-              activity: stress > 7 ? 'Stress-relief walk' : 'Creative activity time',
-              icon: stress > 7 ? '🚶' : '🎨',
-              duration: '30 min'
-            },
-            { 
-              time: '9:00 PM', 
-              activity: 'Gratitude journaling',
-              icon: '📝',
-              duration: '10 min'
-            }
-          ],
-          affirmation: stress > 6 
-            ? "I release what I cannot control and embrace peace."
-            : "I am capable, calm, and ready for whatever comes."
-        };
+    
+    // Generate plan based on schedule
+    const generatedPlan: DayPlan[] = DAYS.map(day => {
+      const stress = schedule.stressByDay[day];
+      const isWorkDay = schedule.workDays.includes(day);
+      
+      return {
+        day,
+        activities: [
+          { 
+            id: generateId(),
+            time: '7:00 AM', 
+            activity: stress > 6 ? 'Gentle morning stretch' : 'Energizing yoga flow',
+            icon: '🧘',
+            duration: '15 min'
+          },
+          { 
+            id: generateId(),
+            time: isWorkDay ? '12:30 PM' : '10:00 AM', 
+            activity: 'Mindful breathing break',
+            icon: '🫁',
+            duration: '5 min'
+          },
+          { 
+            id: generateId(),
+            time: isWorkDay ? '6:00 PM' : '3:00 PM', 
+            activity: stress > 7 ? 'Stress-relief walk' : 'Creative activity time',
+            icon: stress > 7 ? '🚶' : '🎨',
+            duration: '30 min'
+          },
+          { 
+            id: generateId(),
+            time: '9:00 PM', 
+            activity: 'Gratitude journaling',
+            icon: '📝',
+            duration: '10 min'
+          }
+        ],
+        affirmation: stress > 6 
+          ? "I release what I cannot control and embrace peace."
+          : "I am capable, calm, and ready for whatever comes."
+      };
+    });
+    
+    setPlan(generatedPlan);
+    setStep(4);
+    setLoading(false);
+
+    // Save to Supabase
+    if (user) {
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+      
+      await savePlan({
+        week_start: monday.toISOString().split('T')[0],
+        schedule_data: schedule,
+        plan_data: generatedPlan
       });
-      setPlan(samplePlan);
-      setStep(4);
-      setLoading(false);
-    }, 2000);
+    }
+  };
+
+  const startEditActivity = (dayIndex: number, actIndex: number) => {
+    const activity = plan![dayIndex].activities[actIndex];
+    setEditForm({
+      time: activity.time,
+      activity: activity.activity,
+      duration: activity.duration
+    });
+    setEditingActivity({ dayIndex, actIndex });
+  };
+
+  const saveEditActivity = async () => {
+    if (!editingActivity || !plan) return;
+    
+    const newPlan = [...plan];
+    const { dayIndex, actIndex } = editingActivity;
+    newPlan[dayIndex].activities[actIndex] = {
+      ...newPlan[dayIndex].activities[actIndex],
+      ...editForm
+    };
+    
+    setPlan(newPlan);
+    setEditingActivity(null);
+    
+    // Save to Supabase
+    if (user) {
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+      
+      await savePlan({
+        week_start: monday.toISOString().split('T')[0],
+        schedule_data: schedule,
+        plan_data: newPlan
+      });
+    }
+  };
+
+  const deleteActivity = async (dayIndex: number, actIndex: number) => {
+    if (!plan) return;
+    
+    const newPlan = [...plan];
+    newPlan[dayIndex].activities.splice(actIndex, 1);
+    setPlan(newPlan);
+    
+    // Save to Supabase
+    if (user) {
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+      
+      await savePlan({
+        week_start: monday.toISOString().split('T')[0],
+        schedule_data: schedule,
+        plan_data: newPlan
+      });
+    }
+  };
+
+  const addActivity = async () => {
+    if (!plan) return;
+    
+    const newPlan = [...plan];
+    newPlan[addDayIndex].activities.push({
+      id: generateId(),
+      time: editForm.time || '12:00 PM',
+      activity: editForm.activity || 'New activity',
+      icon: '✨',
+      duration: editForm.duration || '15 min'
+    });
+    
+    setPlan(newPlan);
+    setShowAddModal(false);
+    setEditForm({ time: '', activity: '', duration: '' });
+    
+    // Save to Supabase
+    if (user) {
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+      
+      await savePlan({
+        week_start: monday.toISOString().split('T')[0],
+        schedule_data: schedule,
+        plan_data: newPlan
+      });
+    }
   };
 
   const getStressColor = (level: number) => {
     if (level <= 3) return '#22c55e';
     if (level <= 6) return '#f59e0b';
     return '#ef4444';
+  };
+
+  const navigateDay = (direction: 'prev' | 'next') => {
+    setCurrentDayIndex(prev => {
+      if (direction === 'prev') return prev > 0 ? prev - 1 : 6;
+      return prev < 6 ? prev + 1 : 0;
+    });
   };
 
   return (
@@ -275,7 +426,7 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
         </motion.div>
       )}
 
-      {/* Step 4: Generated Plan */}
+      {/* Step 4: Horizontal Carousel Plan View */}
       {step === 4 && plan && (
         <motion.div 
           className="planner-step plan-view"
@@ -284,49 +435,202 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
         >
           <h3>Your 7-Day Wellness Plan</h3>
           
-          <div className="plan-days">
-            {plan.map((dayPlan, i) => (
-              <motion.div 
-                key={dayPlan.day}
-                className="plan-day-card"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-              >
-                <div className="day-header">
-                  <h4>{dayPlan.day}</h4>
-                  <span 
-                    className="stress-badge"
-                    style={{ background: getStressColor(schedule.stressByDay[dayPlan.day]) }}
-                  >
-                    Stress: {schedule.stressByDay[dayPlan.day]}/10
-                  </span>
-                </div>
-                
-                <div className="day-activities">
-                  {dayPlan.activities.map((act, j) => (
-                    <div key={j} className="activity-item">
-                      <span className="act-icon">{act.icon}</span>
-                      <div className="act-details">
-                        <span className="act-time">{act.time}</span>
-                        <span className="act-name">{act.activity}</span>
-                        <span className="act-duration">{act.duration}</span>
+          {/* Carousel Container */}
+          <div className="plan-carousel">
+            <button 
+              className="carousel-arrow carousel-prev" 
+              onClick={() => navigateDay('prev')}
+            >
+              ◀
+            </button>
+            
+            <div className="carousel-content">
+              <AnimatePresence mode="wait">
+                <motion.div 
+                  key={currentDayIndex}
+                  className="carousel-day-card"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="day-header">
+                    <h4>{plan[currentDayIndex].day}</h4>
+                    <span 
+                      className="stress-badge"
+                      style={{ background: getStressColor(schedule.stressByDay[plan[currentDayIndex].day]) }}
+                    >
+                      Stress: {schedule.stressByDay[plan[currentDayIndex].day]}/10
+                    </span>
+                  </div>
+                  
+                  <div className="day-activities">
+                    {plan[currentDayIndex].activities.map((act, j) => (
+                      <div key={act.id} className="activity-item editable">
+                        <span className="act-icon">{act.icon}</span>
+                        <div className="act-details">
+                          <span className="act-time">{act.time}</span>
+                          <span className="act-name">{act.activity}</span>
+                          <span className="act-duration">{act.duration}</span>
+                        </div>
+                        <div className="activity-actions">
+                          <button 
+                            className="edit-btn"
+                            onClick={() => startEditActivity(currentDayIndex, j)}
+                            title="Edit"
+                          >
+                            ✏️
+                          </button>
+                          <button 
+                            className="delete-btn"
+                            onClick={() => deleteActivity(currentDayIndex, j)}
+                            title="Delete"
+                          >
+                            🗑️
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="day-affirmation">
-                  <span>💜</span> {dayPlan.affirmation}
-                </div>
-              </motion.div>
+                    ))}
+                    
+                    <button 
+                      className="add-activity-btn"
+                      onClick={() => { setAddDayIndex(currentDayIndex); setShowAddModal(true); }}
+                    >
+                      + Add Activity
+                    </button>
+                  </div>
+                  
+                  <div className="day-affirmation">
+                    <span>💜</span> {plan[currentDayIndex].affirmation}
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+            
+            <button 
+              className="carousel-arrow carousel-next" 
+              onClick={() => navigateDay('next')}
+            >
+              ▶
+            </button>
+          </div>
+
+          {/* Day Indicator Dots */}
+          <div className="carousel-dots">
+            {plan.map((dayPlan, i) => (
+              <button
+                key={i}
+                className={`carousel-dot ${i === currentDayIndex ? 'active' : ''}`}
+                onClick={() => setCurrentDayIndex(i)}
+                title={dayPlan.day}
+              >
+                {dayPlan.day.slice(0, 1)}
+              </button>
             ))}
           </div>
 
-          <button className="secondary-btn" onClick={() => setStep(1)}>
+          <button className="secondary-btn" onClick={() => setStep(1)} style={{ marginTop: 'var(--space-4)' }}>
             🔄 Create New Plan
           </button>
         </motion.div>
+      )}
+
+      {/* Edit Activity Modal */}
+      {editingActivity && (
+        <div className="modal-overlay" onClick={() => setEditingActivity(null)}>
+          <motion.div 
+            className="edit-modal"
+            onClick={e => e.stopPropagation()}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+          >
+            <h3>Edit Activity</h3>
+            <div className="edit-form">
+              <label>
+                Time
+                <input 
+                  type="text" 
+                  value={editForm.time}
+                  onChange={e => setEditForm(prev => ({ ...prev, time: e.target.value }))}
+                  placeholder="e.g., 7:00 AM"
+                />
+              </label>
+              <label>
+                Activity
+                <input 
+                  type="text" 
+                  value={editForm.activity}
+                  onChange={e => setEditForm(prev => ({ ...prev, activity: e.target.value }))}
+                  placeholder="e.g., Morning yoga"
+                />
+              </label>
+              <label>
+                Duration
+                <input 
+                  type="text" 
+                  value={editForm.duration}
+                  onChange={e => setEditForm(prev => ({ ...prev, duration: e.target.value }))}
+                  placeholder="e.g., 15 min"
+                />
+              </label>
+            </div>
+            <div className="modal-buttons">
+              <button className="secondary-btn" onClick={() => setEditingActivity(null)}>Cancel</button>
+              <button className="primary-btn" onClick={saveEditActivity}>Save Changes</button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Add Activity Modal */}
+      {showAddModal && (
+        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+          <motion.div 
+            className="edit-modal"
+            onClick={e => e.stopPropagation()}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+          >
+            <h3>Add Activity to {plan?.[addDayIndex]?.day}</h3>
+            <div className="edit-form">
+              <label>
+                Time
+                <input 
+                  type="text" 
+                  value={editForm.time}
+                  onChange={e => setEditForm(prev => ({ ...prev, time: e.target.value }))}
+                  placeholder="e.g., 2:00 PM"
+                />
+              </label>
+              <label>
+                Activity
+                <input 
+                  type="text" 
+                  value={editForm.activity}
+                  onChange={e => setEditForm(prev => ({ ...prev, activity: e.target.value }))}
+                  placeholder="e.g., Meditation session"
+                />
+              </label>
+              <label>
+                Duration
+                <input 
+                  type="text" 
+                  value={editForm.duration}
+                  onChange={e => setEditForm(prev => ({ ...prev, duration: e.target.value }))}
+                  placeholder="e.g., 20 min"
+                />
+              </label>
+            </div>
+            <div className="modal-buttons">
+              <button className="secondary-btn" onClick={() => setShowAddModal(false)}>Cancel</button>
+              <button className="primary-btn" onClick={addActivity}>Add Activity</button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {storageLoading && (
+        <div className="saving-indicator">Saving...</div>
       )}
     </motion.div>
   );
