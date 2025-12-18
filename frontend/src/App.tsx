@@ -263,6 +263,18 @@ const AppContent: React.FC = () => {
               Insights
             </button>
           </nav>
+          
+          {/* Mobile Hamburger */}
+          <button 
+            className="hamburger-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span className={`hamburger-line ${mobileMenuOpen ? 'open' : ''}`}></span>
+            <span className={`hamburger-line ${mobileMenuOpen ? 'open' : ''}`}></span>
+            <span className={`hamburger-line ${mobileMenuOpen ? 'open' : ''}`}></span>
+          </button>
+          
           <div className="auth-section">
             {user ? (
               <div className="user-menu">
@@ -276,6 +288,39 @@ const AppContent: React.FC = () => {
             )}
           </div>
         </header>
+        
+        {/* Mobile Nav for Console */}
+        {mobileMenuOpen && (
+          <div className="mobile-nav-overlay" onClick={() => setMobileMenuOpen(false)}>
+            <nav className="mobile-nav" onClick={(e) => e.stopPropagation()}>
+              <div className="mobile-nav-header">
+                <div className="mobile-nav-brand">
+                  <img src="/logo.png" alt="SerenityAI" className="mobile-logo" />
+                  <span>SerenityAI</span>
+                </div>
+                <button className="close-btn" onClick={() => setMobileMenuOpen(false)}>×</button>
+              </div>
+              <div className="mobile-nav-links">
+                <button onClick={() => { setCurrentPage("landing"); setMobileMenuOpen(false); }}>Home</button>
+                <button onClick={() => { setActiveTab("log"); setMobileMenuOpen(false); }}>Check-in</button>
+                <button onClick={() => { setActiveTab("journal"); setMobileMenuOpen(false); }}>Journal</button>
+                <button onClick={() => { setActiveTab("insights"); setMobileMenuOpen(false); }}>Insights</button>
+              </div>
+              <div className="mobile-auth">
+                {user ? (
+                  <>
+                    <span className="user-email">{user.email}</span>
+                    <button className="auth-btn-mobile" onClick={() => { signOut(); setMobileMenuOpen(false); }}>Sign Out</button>
+                  </>
+                ) : (
+                  <button className="auth-btn-mobile primary" onClick={() => { setShowAuthModal(true); setMobileMenuOpen(false); }}>
+                    {isConfigured ? 'Sign In' : 'Continue as Guest'}
+                  </button>
+                )}
+              </div>
+            </nav>
+          </div>
+        )}
 
         <main className="app-content">
           {activeTab === "log" && (
