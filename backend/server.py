@@ -117,6 +117,7 @@ app.add_middleware(
         "http://localhost:3000",
         "https://serenity-ai.vercel.app",
         "https://serenity-ai-gules.vercel.app",
+        "https://serenityai.qzz.io",
         "https://*.vercel.app",
     ],
     allow_credentials=True,
