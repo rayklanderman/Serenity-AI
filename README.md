@@ -4,7 +4,7 @@
 
 > Track emotions, journal thoughts, get AI coaching for mental wellness and productivity.
 
-![Jaseci](https://img.shields.io/badge/JacLang-OSP%20Graph-blue) ![Groq](https://img.shields.io/badge/LLM-Groq%20Llama%203.3-green) ![React](https://img.shields.io/badge/Frontend-React%20TS-61DAFB)
+![Jaseci](https://img.shields.io/badge/JacLang-OSP%20Graph-blue) ![Groq](https://img.shields.io/badge/LLM-Groq%20Llama%203.3-green) ![React](https://img.shields.io/badge/Frontend-React%20TS-61DAFB) ![Supabase](https://img.shields.io/badge/Database-Supabase-3ECF8E)
 
 ---
 
@@ -16,95 +16,177 @@
 
 ## 🌐 Live Demo
 
-- **Frontend**: https://serenity-ai-gules.vercel.app
-- **Backend**: https://serenity-ai-vfxy.onrender.com
+| Platform        | URL                                          |
+| --------------- | -------------------------------------------- |
+| **Frontend**    | https://serenityai.qzz.io                    |
+| **Backend API** | https://serenity-ai-vfxy.onrender.com        |
+| **GitHub**      | https://github.com/rayklanderman/Serenity-AI |
 
 ---
 
-## 🔧 Hybrid Architecture Approach
+## 🏗️ Multi-Agent Architecture
 
-SerenityAI uses a **hybrid architecture** that combines:
+SerenityAI implements a **multi-agent design** with 4 specialized walkers that interact through the OSP graph:
 
-1. **JacLang/OSP Concepts** - The `.jac` files define the graph structure, nodes, edges, walkers, and byLLM agent patterns
-2. **FastAPI Backend** - Implements those patterns reliably with direct Groq LLM calls
-3. **React Frontend** - Modern TypeScript UI with premium design
-
-This approach demonstrates JacLang concepts while ensuring reliable demo performance.
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│                           FRONTEND (React + TypeScript)                  │
+│                          Uses Spawn() via useJac hook                    │
+└────────────────────────────────────┬─────────────────────────────────────┘
+                                     │
+                    ┌────────────────▼────────────────┐
+                    │      FastAPI Backend Server     │
+                    │   Groq LLM (Llama 3.3-70B)      │
+                    └────────────────┬────────────────┘
+                                     │
+        ┌────────────────────────────┼────────────────────────────┐
+        │                            │                            │
+        ▼                            ▼                            ▼
+┌───────────────┐          ┌─────────────────┐          ┌─────────────────┐
+│  MoodLogger   │          │  TrendAnalyzer  │          │SuggestionGen    │
+│  (Walker 1)   │          │   (Walker 2)    │          │  (Walker 3)     │
+├───────────────┤          ├─────────────────┤          ├─────────────────┤
+│ classify_mood │──────────│ detect_patterns │──────────│ generate_prompt │
+│empathy_resp() │          │ [-->Emotion]    │          │create_breathing │
+└───────┬───────┘          └────────┬────────┘          └────────┬────────┘
+        │                           │                            │
+        ▼                           ▼                            ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         OSP GRAPH (In-Memory)                           │
+│  ┌──────────┐    triggers    ┌──────────┐    helps_with    ┌─────────┐ │
+│  │ Emotion  │◄──────────────▶│ Trigger  │◄───────────────▶│Activity │ │
+│  └────┬─────┘                └──────────┘                  └─────────┘ │
+│       │ influences                                                      │
+│       ▼                                                                 │
+│  ┌──────────┐    logged_by   ┌──────────┐                               │
+│  │Suggestion│◄──────────────▶│  User    │                               │
+│  └──────────┘                └──────────┘                               │
+└─────────────────────────────────────────────────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                     SUPABASE (Long-term Persistence)                    │
+│   mood_logs │ journal_entries │ wellness_plans │ game_scores            │
+└─────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## ✨ Features
+## 🔄 Agent Interaction Flow
 
-| Feature               | Description                                      |
-| --------------------- | ------------------------------------------------ |
-| **Landing Page**      | Hero section, features, tech stack, CTAs         |
-| **Mood Check-in**     | Log emotions with AI empathy response            |
-| **Mood-Aligned Tips** | Tips personalized to your current mood           |
-| **Mind Coach**        | Productivity coaching (breaks, hydration, sleep) |
-| **Pattern Analysis**  | Weekly emotional trends with charts              |
-| **Smart Journal**     | Side-by-side layout with AI insights             |
-| **Contact Page**      | Contact form + social links                      |
-| **About Section**     | Learn how the app helps you                      |
+When a user logs a mood, the following multi-agent interaction occurs:
+
+```
+User Action                  Walker                    byLLM Function
+───────────────────────────────────────────────────────────────────────
+1. Select Mood      ──────▶  MoodLogger      ──────▶  classify_mood()
+                                             ──────▶  empathy_response()
+                    [Creates Emotion node in graph]
+
+2. View Insights    ──────▶  TrendAnalyzer   ──────▶  detect_patterns()
+                    [Traverses -->Emotion edges]
+                    [Returns: recurring_emotions, weekly_trend]
+
+3. Get Suggestions  ──────▶  SuggestionGen   ──────▶  generate_prompt()
+                                             ──────▶  create_breathing_exercise()
+                    [Creates Suggestion node]
+
+4. Journal Entry    ──────▶  JournalSaver    ──────▶  classify_mood()
+                                             ──────▶  empathy_response()
+                    [Creates JournalEntry node]
+```
 
 ---
 
-## 🤖 6 byLLM Agents
+## 🤖 byLLM Agent Functions
 
-| Agent                         | Type       | Purpose                                            |
-| ----------------------------- | ---------- | -------------------------------------------------- |
-| `empathy_response()`          | Generative | Warm, supportive responses based on user's emotion |
-| `classify_mood()`             | Analytical | Detects emotion, intensity, triggers from text     |
-| `detect_patterns()`           | Analytical | Finds recurring emotions and weekly trends         |
-| `generate_prompt()`           | Generative | Creates thoughtful journaling prompts              |
-| `create_breathing_exercise()` | Generative | Builds stress-relief breathing routines            |
-| `mind_coach()`                | Generative | Productivity tips that respect mental state        |
+### Generative Agents (Content Creation)
+
+| Function                      | Purpose                   | Example Output                                                  |
+| ----------------------------- | ------------------------- | --------------------------------------------------------------- |
+| `empathy_response()`          | Warm, supportive messages | "I hear that you're feeling anxious. Let's breathe together..." |
+| `generate_prompt()`           | Journaling prompts        | "What made you smile today, even briefly?"                      |
+| `create_breathing_exercise()` | Stress-relief routines    | 4-7-8 breathing with step-by-step guide                         |
+
+### Analytical Agents (Pattern Detection)
+
+| Function            | Purpose                    | Output Type                                           |
+| ------------------- | -------------------------- | ----------------------------------------------------- |
+| `classify_mood()`   | Detect emotion + intensity | `{emotion: "happy", intensity: 8, triggers: [...]}`   |
+| `detect_patterns()` | Weekly trend analysis      | `{weekly_trend: "improving", recommendations: [...]}` |
 
 ---
 
 ## 📊 OSP Graph Schema
 
-**Nodes (6 types):**
+### Node Types (6)
 
-- `Emotion` - Mood data with intensity, color, timestamp
-- `Suggestion` - AI-generated tips and prompts
-- `JournalEntry` - User writings with AI insights
-- `User` - User profile and preferences
-- `Trigger` - Events that affect mood
-- `Activity` - Recommended activities
+| Node           | Purpose                | Key Fields                                   |
+| -------------- | ---------------------- | -------------------------------------------- |
+| `User`         | Root of user's graph   | user_id, name                                |
+| `Emotion`      | Logged emotional state | name, intensity, timestamp, color            |
+| `Trigger`      | What caused an emotion | name, category, frequency                    |
+| `Activity`     | Recommended activities | name, duration, effectiveness                |
+| `Suggestion`   | AI-generated tips      | content, type, relevance_score               |
+| `JournalEntry` | User journal entries   | content, mood_before, mood_after, ai_insight |
 
-**Edges (6 types):**
+### Edge Types (5)
 
-- `triggers` → connects emotions to triggers
-- `helps_with` → links suggestions to emotions
-- `influences` → shows mood impact relationships
-- `correlates_with` → pattern connections
-- `contains` → user contains entries
-- `logged_by` → entries logged by user
+| Edge              | Relationship        | Example                                   |
+| ----------------- | ------------------- | ----------------------------------------- |
+| `triggers`        | Trigger → Emotion   | "work stress" triggers "anxious"          |
+| `helps_with`      | Activity → Emotion  | "breathing exercise" helps with "anxious" |
+| `influences`      | Emotion → Emotion   | "anxious" influences "tired"              |
+| `correlates_with` | Pattern connections | "Monday" correlates with "stressed"       |
+| `contains`        | User → nodes        | User contains all their data              |
+
+### Graph Traversal Example
+
+```jac
+// In TrendAnalyzer walker
+for emotion_node in [-->Emotion] {
+    mood_history.append({
+        "emotion": emotion_node.name,
+        "intensity": emotion_node.intensity,
+        "timestamp": emotion_node.timestamp
+    });
+}
+patterns = detect_patterns(mood_history);  // byLLM call
+```
 
 ---
 
-## 🏗️ Architecture Diagram
+## ✨ Features
 
-```
-┌─────────────────────┐     ┌─────────────────────┐
-│   React Frontend    │────▶│  FastAPI Backend    │
-│   (TypeScript)      │     │  (Hybrid Approach)  │
-│   Vercel Hosted     │     │  Render Hosted      │
-└─────────────────────┘     └─────────────────────┘
-                                     │
-                        ┌────────────┴────────────┐
-                        │                         │
-                   JacLang Files           6 byLLM Agents
-                   (OSP Schema)            (Groq LLM Calls)
-                        │                         │
-                  ┌─────┴─────┐           ┌───────┴───────┐
-                  │main.jac   │           │empathy_resp() │
-                  │models.jac │           │classify_mood()│
-                  │walkers.jac│           │detect_pattern │
-                  │agents.jac │           │generate_prompt│
-                  └───────────┘           │create_breath()│
-                                          │mind_coach()   │
-                                          └───────────────┘
+| Feature             | Description                    | Status  |
+| ------------------- | ------------------------------ | ------- |
+| **Mood Check-in**   | 6 moods with AI empathy        | ✅ Live |
+| **Voice Input**     | Speech-to-text logging         | ✅ Live |
+| **Smart Journal**   | AI insights + mood tracking    | ✅ Live |
+| **Emotion Graphs**  | Timeline + Radar visualization | ✅ Live |
+| **Weekly Insights** | TrendAnalyzer patterns         | ✅ Live |
+| **Mind Planner**    | 7-day wellness carousel        | ✅ Live |
+| **Trivia Games**    | Score tracking + persistence   | ✅ Live |
+| **Supabase Auth**   | Email/password + guest mode    | ✅ Live |
+
+---
+
+## 🗄️ Data Persistence (Hybrid Approach)
+
+SerenityAI uses a **hybrid storage strategy**:
+
+| Layer         | Technology        | Purpose                               |
+| ------------- | ----------------- | ------------------------------------- |
+| **OSP Graph** | JacLang in-memory | Real-time analysis, pattern detection |
+| **Supabase**  | PostgreSQL + RLS  | Long-term persistence across sessions |
+
+### Supabase Tables
+
+```sql
+mood_logs       -- Emotion logging with AI responses
+journal_entries -- Journal entries with AI insights
+wellness_plans  -- Weekly planner data
+game_scores     -- Trivia game high scores
 ```
 
 ---
@@ -116,7 +198,7 @@ This approach demonstrates JacLang concepts while ensuring reliable demo perform
 ```bash
 cd backend
 python -m venv venv
-.\venv\Scripts\activate
+.\venv\Scripts\activate  # Windows
 pip install -r requirements.txt
 echo "GROQ_API_KEY=your_key" > .env
 python server.py
@@ -139,37 +221,54 @@ npm run dev
 ```
 serenity-ai/
 ├── backend/
-│   ├── server.py         # FastAPI + 6 byLLM agents
-│   ├── main.jac          # OSP Graph + Walkers
-│   ├── models.jac        # Node/Edge definitions
-│   ├── agents.jac        # byLLM agent declarations
-│   └── walkers.jac       # Walker implementations
+│   ├── server.py         # FastAPI + byLLM agents
+│   ├── models.jac        # OSP Node/Edge definitions
+│   ├── agents.jac        # byLLM function declarations
+│   ├── walkers.jac       # Walker implementations
+│   └── main.jac          # Graph initialization
 ├── frontend/
 │   └── src/
 │       ├── components/   # React components
-│       ├── hooks/        # useJac API hook
-│       └── styles/       # Premium UI CSS
-└── docs/
-    ├── PROJECT.md        # Full documentation
-    └── DEPLOY.md         # Deployment guide
+│       │   ├── MoodWheel.tsx
+│       │   ├── EmotionGraph.tsx
+│       │   ├── InsightsTimeline.tsx
+│       │   ├── MindPlanner.tsx
+│       │   └── TriviaGames.tsx
+│       ├── hooks/
+│       │   ├── useJac.ts     # Spawn() API hook
+│       │   └── useStorage.ts # Supabase persistence
+│       └── styles/
+│           └── index.css     # Premium UI
+└── supabase/
+    └── schema.sql        # Database schema
 ```
 
 ---
 
-## 🚀 Upcoming Features
+## 🔑 Environment Variables
 
-| Feature              | Status     |
-| -------------------- | ---------- |
-| Supabase Persistence | 🔜 Planned |
-| Mindfulness Plans    | 🔜 Planned |
-| Push Notifications   | 🔜 Planned |
-| Voice Journaling     | 🔜 Planned |
+### Backend (.env)
+
+```
+GROQ_API_KEY=your_groq_api_key
+```
+
+### Frontend (.env.local)
+
+```
+VITE_API_URL=http://localhost:8000
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_anon_key
+```
 
 ---
 
 ## 👥 Team
 
-Built for the Jaseci AI Hackathon 2025 | MindMate Track
+**Ray Klanderman** - Veritas University  
+Built for Jaseci AI Hackathon 2025 | MindMate Harmony Space Track
+
+---
 
 ## 📄 License
 
