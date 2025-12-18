@@ -2544,50 +2544,74 @@ textarea:focus {
   transform: translateY(-1px);
 }
 
-/* Mobile Responsive */
+/* Mobile Responsive - Logo Left, Hamburger Right */
 @media (max-width: 768px) {
+  /* Show hamburger, hide desktop elements */
   .hamburger-btn {
-    display: flex;
+    display: flex !important;
+    margin-left: auto;
   }
   
   .desktop-nav,
-  .desktop-auth {
-    display: none;
+  .desktop-auth,
+  .app-header nav,
+  .app-header .auth-section,
+  .landing-nav {
+    display: none !important;
   }
   
-  /* Mobile header: logo left, hamburger right, single row */
+  /* Landing header - logo left, hamburger right */
   .landing-header {
-    padding: 0.5rem 1rem;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0.5rem 1rem !important;
+    width: 100%;
+  }
+  
+  .landing-header .logo-container {
+    margin-right: auto;
   }
   
   .landing-header .logo-text {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
   
+  /* App header - logo left, hamburger right */
   .app-header {
-    padding: 0.5rem 1rem;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0.5rem 1rem !important;
+    margin-bottom: 1rem;
+    flex-wrap: nowrap !important;
   }
   
-  .app-header nav {
-    display: none;
-  }
-  
-  .app-header .auth-section {
-    display: none;
+  .app-header .logo-container {
+    margin-right: auto;
   }
   
   .app-header h1 {
-    font-size: 1rem;
+    font-size: 0.95rem;
+    white-space: nowrap;
   }
   
   .console-badge {
-    font-size: 0.6rem;
-    padding: 0.1rem 0.4rem;
+    font-size: 0.55rem;
+    padding: 0.1rem 0.3rem;
+    margin-left: 0.25rem;
   }
   
   .header-logo {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
+  }
+  
+  /* App container - reduce padding */
+  .app-container {
+    padding: 1rem;
   }
 }
 
