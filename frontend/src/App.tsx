@@ -120,24 +120,27 @@ const AppContent: React.FC = () => {
           <div className="mobile-nav-overlay" onClick={() => setMobileMenuOpen(false)}>
             <nav className="mobile-nav" onClick={(e) => e.stopPropagation()}>
               <div className="mobile-nav-header">
-                <span className="mobile-nav-title">Menu</span>
-                <button className="close-btn" onClick={() => setMobileMenuOpen(false)}>✕</button>
+                <div className="mobile-nav-brand">
+                  <img src="/logo.png" alt="SerenityAI" className="mobile-logo" />
+                  <span>SerenityAI</span>
+                </div>
+                <button className="close-btn" onClick={() => setMobileMenuOpen(false)}>×</button>
               </div>
               <div className="mobile-nav-links">
-                <button onClick={() => { setCurrentPage("landing"); setMobileMenuOpen(false); }}>🏠 Home</button>
-                <button onClick={() => { setCurrentPage("console"); setMobileMenuOpen(false); }}>💻 Console</button>
-                <button onClick={() => { setCurrentPage("about"); setMobileMenuOpen(false); }}>ℹ️ About</button>
-                <button onClick={() => { setCurrentPage("contact"); setMobileMenuOpen(false); }}>📬 Contact</button>
+                <button onClick={() => { setCurrentPage("landing"); setMobileMenuOpen(false); }}>Home</button>
+                <button onClick={() => { setCurrentPage("console"); setMobileMenuOpen(false); }}>Console</button>
+                <button onClick={() => { setCurrentPage("about"); setMobileMenuOpen(false); }}>About</button>
+                <button onClick={() => { setCurrentPage("contact"); setMobileMenuOpen(false); }}>Contact</button>
               </div>
               <div className="mobile-auth">
                 {user ? (
                   <>
                     <span className="user-email">{user.email}</span>
-                    <button onClick={() => { signOut(); setMobileMenuOpen(false); }}>Sign Out</button>
+                    <button className="auth-btn-mobile" onClick={() => { signOut(); setMobileMenuOpen(false); }}>Sign Out</button>
                   </>
                 ) : (
-                  <button onClick={() => { setShowAuthModal(true); setMobileMenuOpen(false); }}>
-                    {isConfigured ? '🔐 Sign In' : '👤 Guest Mode'}
+                  <button className="auth-btn-mobile primary" onClick={() => { setShowAuthModal(true); setMobileMenuOpen(false); }}>
+                    {isConfigured ? 'Sign In' : 'Continue as Guest'}
                   </button>
                 )}
               </div>
