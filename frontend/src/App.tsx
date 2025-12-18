@@ -79,7 +79,7 @@ const AppContent: React.FC = () => {
         <div className="aurora-background" />
         <header className="landing-header">
           <div className="logo-container" onClick={() => setCurrentPage("landing")}>
-            <span className="logo-emoji">🧘</span>
+            <img src="/logo.png" alt="SerenityAI" className="header-logo" />
             <span className="logo-text">SerenityAI</span>
           </div>
           
@@ -163,14 +163,14 @@ const AppContent: React.FC = () => {
         <div className="aurora-background" />
         <header className="app-header">
           <div className="logo-container" onClick={() => setCurrentPage("landing")} style={{ cursor: 'pointer' }}>
-            <span className="logo-emoji">🧘</span>
+            <img src="/logo.png" alt="SerenityAI" className="header-logo" />
             <h1>SerenityAI</h1>
           </div>
           <nav>
-            <button onClick={() => setCurrentPage("landing")}>🏠 Home</button>
-            <button onClick={() => setCurrentPage("console")}>💻 Console</button>
-            <button className="active">ℹ️ About</button>
-            <button onClick={() => setCurrentPage("contact")}>📬 Contact</button>
+            <button onClick={() => setCurrentPage("landing")}>Home</button>
+            <button onClick={() => setCurrentPage("console")}>Console</button>
+            <button className="active">About</button>
+            <button onClick={() => setCurrentPage("contact")}>Contact</button>
           </nav>
           <div className="auth-section">
             {user ? (
@@ -180,7 +180,7 @@ const AppContent: React.FC = () => {
               </div>
             ) : (
               <button className="auth-btn primary" onClick={() => setShowAuthModal(true)}>
-                {isConfigured ? '🔐 Sign In' : '👤 Guest Mode'}
+                {isConfigured ? 'Sign In' : 'Guest Mode'}
               </button>
             )}
           </div>
@@ -201,14 +201,14 @@ const AppContent: React.FC = () => {
         <div className="aurora-background" />
         <header className="app-header">
           <div className="logo-container" onClick={() => setCurrentPage("landing")} style={{ cursor: 'pointer' }}>
-            <span className="logo-emoji">🧘</span>
+            <img src="/logo.png" alt="SerenityAI" className="header-logo" />
             <h1>SerenityAI</h1>
           </div>
           <nav>
-            <button onClick={() => setCurrentPage("landing")}>🏠 Home</button>
-            <button onClick={() => setCurrentPage("console")}>💻 Console</button>
-            <button onClick={() => setCurrentPage("about")}>ℹ️ About</button>
-            <button className="active">📬 Contact</button>
+            <button onClick={() => setCurrentPage("landing")}>Home</button>
+            <button onClick={() => setCurrentPage("console")}>Console</button>
+            <button onClick={() => setCurrentPage("about")}>About</button>
+            <button className="active">Contact</button>
           </nav>
           <div className="auth-section">
             {user ? (
@@ -218,7 +218,7 @@ const AppContent: React.FC = () => {
               </div>
             ) : (
               <button className="auth-btn primary" onClick={() => setShowAuthModal(true)}>
-                {isConfigured ? '🔐 Sign In' : '👤 Guest Mode'}
+                {isConfigured ? 'Sign In' : 'Guest Mode'}
               </button>
             )}
           </div>
@@ -239,28 +239,28 @@ const AppContent: React.FC = () => {
       <div className="app-container">
         <header className="app-header">
           <div className="logo-container" onClick={() => setCurrentPage("landing")} style={{ cursor: 'pointer' }}>
-            <span className="logo-emoji">🧘</span>
+            <img src="/logo.png" alt="SerenityAI" className="header-logo" />
             <h1>SerenityAI <span className="console-badge">Console</span></h1>
           </div>
           <nav>
-            <button onClick={() => setCurrentPage("landing")}>🏠 Home</button>
+            <button onClick={() => setCurrentPage("landing")}>Home</button>
             <button
               className={activeTab === "log" ? "active" : ""}
               onClick={() => setActiveTab("log")}
             >
-              ✨ Check-in
+              Check-in
             </button>
             <button
               className={activeTab === "journal" ? "active" : ""}
               onClick={() => setActiveTab("journal")}
             >
-              📝 Journal {journalEntries.length > 0 && <span className="badge">{journalEntries.length}</span>}
+              Journal {journalEntries.length > 0 && <span className="badge">{journalEntries.length}</span>}
             </button>
             <button
               className={activeTab === "insights" ? "active" : ""}
               onClick={() => setActiveTab("insights")}
             >
-              📊 Insights
+              Insights
             </button>
           </nav>
           <div className="auth-section">
@@ -271,7 +271,7 @@ const AppContent: React.FC = () => {
               </div>
             ) : (
               <button className="auth-btn primary" onClick={() => setShowAuthModal(true)}>
-                {isConfigured ? '🔐 Sign In' : '👤 Guest Mode'}
+                {isConfigured ? 'Sign In' : 'Guest Mode'}
               </button>
             )}
           </div>
