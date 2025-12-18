@@ -24,7 +24,7 @@ const getAppUrl = () => {
     const { protocol, host } = window.location;
     return `${protocol}//${host}`;
   }
-  return 'https://serenity-ai.vercel.app';
+  return 'https://serenity-ai-gules.vercel.app';
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
