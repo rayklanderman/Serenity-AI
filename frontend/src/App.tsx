@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import LandingPage from "./components/LandingPage";
@@ -14,6 +14,7 @@ import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import AuthModal from "./components/AuthModal";
 import type { UserContext, Emotion } from "./types";
+import { useMoodStorage, useJournalStorage } from "./hooks/useStorage";
 import "./styles/index.css";
 
 export interface MoodEntry {
@@ -51,6 +52,60 @@ const AppContent: React.FC = () => {
   const [journalEntries, setJournalEntries] = useState<JournalEntryData[]>([]);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  // Storage hooks for persisting and loading data
+  const { getMoods } = useMoodStorage();
+  const { getEntries } = useJournalStorage();
+
+  // Load saved moods and journals from Supabase on user login
+  const loadSavedData = useCallback(async () => {
+    if (!user || dataLoaded) return;
+    
+    console.log('[App] Loading saved data for user:', user.email);
+    try {
+      // Load moods
+      const savedMoods = await getMoods(20);
+      if (savedMoods.length > 0) {
+        const formattedMoods: MoodEntry[] = savedMoods.map((m: any) => ({
+          emotion: {
+            name: m.mood_name,
+            emoji: m.emoji,
+            color: '#818cf8' // Default color
+          },
+          timestamp: new Date(m.created_at),
+          note: m.note || '',
+          aiResponse: m.ai_response || ''
+        }));
+        setMoodHistory(formattedMoods);
+        console.log('[App] Loaded', formattedMoods.length, 'moods');
+      }
+
+      // Load journal entries
+      const savedJournals = await getEntries(50);
+      if (savedJournals.length > 0) {
+        const formattedJournals: JournalEntryData[] = savedJournals.map((j: any) => ({
+          content: j.content,
+          timestamp: new Date(j.created_at),
+          aiInsight: j.ai_insight || '',
+          moodChange: j.mood_change || 0
+        }));
+        setJournalEntries(formattedJournals);
+        console.log('[App] Loaded', formattedJournals.length, 'journal entries');
+      }
+
+      setDataLoaded(true);
+    } catch (err) {
+      console.error('[App] Error loading saved data:', err);
+    }
+  }, [user, dataLoaded, getMoods, getEntries]);
+
+  // Trigger data loading when user is authenticated
+  useEffect(() => {
+    if (user && !dataLoaded) {
+      loadSavedData();
+    }
+  }, [user, dataLoaded, loadSavedData]);
 
   const handleMoodLogged = (entry: MoodEntry) => {
     setMoodHistory((prev) => [entry, ...prev].slice(0, 20));
