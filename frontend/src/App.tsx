@@ -53,6 +53,27 @@ const AppContent: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  // Auto-hide header/footer on scroll (Mobile only optimized)
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down
+        setHeaderVisible(false);
+      } else {
+        // Scrolling up
+        setHeaderVisible(true);
+      }
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
   // Storage hooks for persisting and loading data
   const { getMoods } = useMoodStorage();
@@ -138,12 +159,16 @@ const AppContent: React.FC = () => {
     );
   }
 
+  // Header visibility class
+  const headerClass = headerVisible ? "" : "header-hidden";
+  const footerClass = headerVisible ? "" : "footer-hidden";
+
   // Landing Page
   if (currentPage === "landing") {
     return (
       <div className="app-wrapper landing">
         <div className="aurora-background" />
-        <header className="landing-header">
+        <header className={`landing-header ${headerClass}`}>
           <div className="logo-container" onClick={() => setCurrentPage("landing")}>
             <img src="/logo.png" alt="SerenityAI" className="header-logo" />
             <span className="logo-text">SerenityAI</span>
@@ -193,10 +218,15 @@ const AppContent: React.FC = () => {
                 <button className="close-btn" onClick={() => setMobileMenuOpen(false)}>×</button>
               </div>
               <div className="mobile-nav-links">
-                <button onClick={() => { setCurrentPage("landing"); setMobileMenuOpen(false); }}>Home</button>
-                <button onClick={() => { setCurrentPage("console"); setMobileMenuOpen(false); }}>Console</button>
-                <button onClick={() => { setCurrentPage("about"); setMobileMenuOpen(false); }}>About</button>
-                <button onClick={() => { setCurrentPage("contact"); setMobileMenuOpen(false); }}>Contact</button>
+                <button 
+                  className={activeTab === "log" ? "active" : ""} 
+                  onClick={() => { setCurrentPage("landing"); setMobileMenuOpen(false); }}
+                >
+                  🏠 Home
+                </button>
+                <button onClick={() => { setCurrentPage("console"); setMobileMenuOpen(false); }}>🚀 Console</button>
+                <button onClick={() => { setCurrentPage("about"); setMobileMenuOpen(false); }}>ℹ️ About</button>
+                <button onClick={() => { setCurrentPage("contact"); setMobileMenuOpen(false); }}>📞 Contact</button>
               </div>
               <div className="mobile-auth">
                 {user ? (
@@ -215,7 +245,9 @@ const AppContent: React.FC = () => {
         )}
         
         <LandingPage onGetStarted={handleGetStarted} />
-        <Footer onNavigate={handleNavigate} />
+        <div className={footerClass}>
+          <Footer onNavigate={handleNavigate} />
+        </div>
         
         {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
       </div>
@@ -227,7 +259,7 @@ const AppContent: React.FC = () => {
     return (
       <div className="app-wrapper">
         <div className="aurora-background" />
-        <header className="app-header">
+        <header className={`app-header ${headerClass}`}>
           <div className="logo-container" onClick={() => setCurrentPage("landing")} style={{ cursor: 'pointer' }}>
             <img src="/logo.png" alt="SerenityAI" className="header-logo" />
             <h1>SerenityAI</h1>
@@ -238,7 +270,18 @@ const AppContent: React.FC = () => {
             <button className="active">About</button>
             <button onClick={() => setCurrentPage("contact")}>Contact</button>
           </nav>
-          <div className="auth-section">
+          
+          <button 
+            className="hamburger-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span className={`hamburger-line ${mobileMenuOpen ? 'open' : ''}`}></span>
+            <span className={`hamburger-line ${mobileMenuOpen ? 'open' : ''}`}></span>
+            <span className={`hamburger-line ${mobileMenuOpen ? 'open' : ''}`}></span>
+          </button>
+
+          <div className="auth-section desktop-auth">
             {user ? (
               <div className="user-menu">
                 <span className="user-email">{user.email}</span>
@@ -251,10 +294,34 @@ const AppContent: React.FC = () => {
             )}
           </div>
         </header>
+
+        {/* Mobile Nav Overlay for Generic Pages */}
+        {mobileMenuOpen && (
+          <div className="mobile-nav-overlay" onClick={() => setMobileMenuOpen(false)}>
+            <nav className="mobile-nav" onClick={(e) => e.stopPropagation()}>
+              <div className="mobile-nav-header">
+                <div className="mobile-nav-brand">
+                  <img src="/logo.png" alt="SerenityAI" className="mobile-logo" />
+                  <span>SerenityAI</span>
+                </div>
+                <button className="close-btn" onClick={() => setMobileMenuOpen(false)}>×</button>
+              </div>
+              <div className="mobile-nav-links">
+                <button onClick={() => { setCurrentPage("landing"); setMobileMenuOpen(false); }}>🏠 Home</button>
+                <button onClick={() => { setCurrentPage("console"); setMobileMenuOpen(false); }}>🚀 Console</button>
+                <button className="active" onClick={() => setMobileMenuOpen(false)}>ℹ️ About</button>
+                <button onClick={() => { setCurrentPage("contact"); setMobileMenuOpen(false); }}>📞 Contact</button>
+              </div>
+            </nav>
+          </div>
+        )}
+
         <main className="app-content">
           <About />
         </main>
-        <Footer onNavigate={handleNavigate} />
+        <div className={footerClass}>
+          <Footer onNavigate={handleNavigate} />
+        </div>
         {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
       </div>
     );
@@ -265,7 +332,7 @@ const AppContent: React.FC = () => {
     return (
       <div className="app-wrapper">
         <div className="aurora-background" />
-        <header className="app-header">
+        <header className={`app-header ${headerClass}`}>
           <div className="logo-container" onClick={() => setCurrentPage("landing")} style={{ cursor: 'pointer' }}>
             <img src="/logo.png" alt="SerenityAI" className="header-logo" />
             <h1>SerenityAI</h1>
@@ -276,7 +343,18 @@ const AppContent: React.FC = () => {
             <button onClick={() => setCurrentPage("about")}>About</button>
             <button className="active">Contact</button>
           </nav>
-          <div className="auth-section">
+
+          <button 
+            className="hamburger-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span className={`hamburger-line ${mobileMenuOpen ? 'open' : ''}`}></span>
+            <span className={`hamburger-line ${mobileMenuOpen ? 'open' : ''}`}></span>
+            <span className={`hamburger-line ${mobileMenuOpen ? 'open' : ''}`}></span>
+          </button>
+
+          <div className="auth-section desktop-auth">
             {user ? (
               <div className="user-menu">
                 <span className="user-email">{user.email}</span>
@@ -289,10 +367,34 @@ const AppContent: React.FC = () => {
             )}
           </div>
         </header>
+
+        {/* Mobile Nav Overlay for Generic Pages */}
+        {mobileMenuOpen && (
+          <div className="mobile-nav-overlay" onClick={() => setMobileMenuOpen(false)}>
+            <nav className="mobile-nav" onClick={(e) => e.stopPropagation()}>
+              <div className="mobile-nav-header">
+                <div className="mobile-nav-brand">
+                  <img src="/logo.png" alt="SerenityAI" className="mobile-logo" />
+                  <span>SerenityAI</span>
+                </div>
+                <button className="close-btn" onClick={() => setMobileMenuOpen(false)}>×</button>
+              </div>
+              <div className="mobile-nav-links">
+                <button onClick={() => { setCurrentPage("landing"); setMobileMenuOpen(false); }}>🏠 Home</button>
+                <button onClick={() => { setCurrentPage("console"); setMobileMenuOpen(false); }}>🚀 Console</button>
+                <button onClick={() => { setCurrentPage("about"); setMobileMenuOpen(false); }}>ℹ️ About</button>
+                <button className="active" onClick={() => setMobileMenuOpen(false)}>📞 Contact</button>
+              </div>
+            </nav>
+          </div>
+        )}
+
         <main className="app-content">
           <Contact />
         </main>
-        <Footer onNavigate={handleNavigate} />
+        <div className={footerClass}>
+          <Footer onNavigate={handleNavigate} />
+        </div>
         {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
       </div>
     );
@@ -304,7 +406,7 @@ const AppContent: React.FC = () => {
       <div className="aurora-background" />
       
       {/* Full-width header - outside container for consistent layout */}
-      <header className="landing-header">
+      <header className={`landing-header ${headerClass}`}>
         <div className="logo-container" onClick={() => setCurrentPage("landing")} style={{ cursor: 'pointer' }}>
           <img src="/logo.png" alt="SerenityAI" className="header-logo" />
           <span className="logo-text">SerenityAI</span>
@@ -381,12 +483,44 @@ const AppContent: React.FC = () => {
               <button className="close-btn" onClick={() => setMobileMenuOpen(false)}>×</button>
             </div>
             <div className="mobile-nav-links">
-              <button onClick={() => { setCurrentPage("landing"); setMobileMenuOpen(false); }}>Home</button>
-              <button onClick={() => { setActiveTab("log"); setMobileMenuOpen(false); }}>Check-in</button>
-              <button onClick={() => { setActiveTab("journal"); setMobileMenuOpen(false); }}>Journal</button>
-              <button onClick={() => { setActiveTab("insights"); setMobileMenuOpen(false); }}>Insights</button>
-              <button onClick={() => { setActiveTab("planner"); setMobileMenuOpen(false); }}>Planner</button>
-              <button onClick={() => { setActiveTab("games"); setMobileMenuOpen(false); }}>Games</button>
+              <button 
+                className={activeTab === "log" ? "active" : ""} 
+                onClick={() => { setActiveTab("log"); setMobileMenuOpen(false); }}
+              >
+                📝 Check-in
+              </button>
+              <button 
+                className={activeTab === "journal" ? "active" : ""} 
+                onClick={() => { setActiveTab("journal"); setMobileMenuOpen(false); }}
+              >
+                📓 Journal
+              </button>
+              <button 
+                className={activeTab === "insights" ? "active" : ""} 
+                onClick={() => { setActiveTab("insights"); setMobileMenuOpen(false); }}
+              >
+                📊 Insights
+              </button>
+              <button 
+                className={activeTab === "planner" ? "active" : ""} 
+                onClick={() => { setActiveTab("planner"); setMobileMenuOpen(false); }}
+              >
+                🗓️ Planner
+              </button>
+              <button 
+                className={activeTab === "games" ? "active" : ""} 
+                onClick={() => { setActiveTab("games"); setMobileMenuOpen(false); }}
+              >
+                🎮 Games
+              </button>
+              
+              {/* Contextual Back Button */}
+              <button 
+                className="back-btn" 
+                onClick={() => { setCurrentPage("landing"); setMobileMenuOpen(false); }}
+              >
+                ⬅️ Back to Home
+              </button>
             </div>
             <div className="mobile-auth">
               {user ? (
@@ -445,7 +579,9 @@ const AppContent: React.FC = () => {
           )}
         </main>
       </div>
-      <Footer onNavigate={handleNavigate} />
+      <div className={footerClass}>
+        <Footer onNavigate={handleNavigate} />
+      </div>
 
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </div>
