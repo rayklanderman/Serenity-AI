@@ -2325,33 +2325,34 @@ textarea:focus {
 }
 
 /* =====================================================
-   HAMBURGER MENU & MOBILE NAV
+   HAMBURGER MENU & MOBILE NAV - Compact
    ===================================================== */
 .hamburger-btn {
   display: none;
   flex-direction: column;
   justify-content: center;
-  gap: 5px;
-  width: 40px;
-  height: 40px;
-  padding: 8px;
+  gap: 4px;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
   background: transparent;
   border: none;
   cursor: pointer;
   z-index: 1001;
+  margin-left: auto;
 }
 
 .hamburger-line {
   display: block;
-  width: 24px;
-  height: 3px;
+  width: 22px;
+  height: 2px;
   background: var(--gray-700);
   border-radius: 2px;
   transition: all 0.3s ease;
 }
 
 .hamburger-line.open:nth-child(1) {
-  transform: rotate(45deg) translate(5px, 5px);
+  transform: rotate(45deg) translate(4px, 4px);
 }
 
 .hamburger-line.open:nth-child(2) {
@@ -2359,7 +2360,7 @@ textarea:focus {
 }
 
 .hamburger-line.open:nth-child(3) {
-  transform: rotate(-45deg) translate(6px, -6px);
+  transform: rotate(-45deg) translate(5px, -5px);
 }
 
 .mobile-nav-overlay {
@@ -2377,56 +2378,100 @@ textarea:focus {
   position: fixed;
   top: 0;
   right: 0;
-  width: 280px;
-  height: 100vh;
+  width: 260px;
+  max-height: 100vh;
   background: var(--white);
-  padding: calc(80px + var(--space-6)) var(--space-6) var(--space-6);
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
   box-shadow: -10px 0 40px rgba(0, 0, 0, 0.15);
   z-index: 1000;
 }
 
-.mobile-nav button {
-  width: 100%;
+.mobile-nav-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: var(--space-4);
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--gray-50);
+}
+
+.mobile-nav-title {
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.close-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gray-100);
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 1rem;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.close-btn:hover {
+  background: var(--gray-200);
+  color: var(--gray-900);
+}
+
+.mobile-nav-links {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3);
+}
+
+.mobile-nav-links button {
+  width: 100%;
+  padding: var(--space-3);
   background: transparent;
   border: none;
   border-radius: var(--radius-md);
   text-align: left;
   font-family: inherit;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 500;
   color: var(--gray-700);
   cursor: pointer;
   transition: all var(--transition-base);
 }
 
-.mobile-nav button:hover {
+.mobile-nav-links button:hover {
   background: var(--gray-100);
   color: var(--primary);
 }
 
 .mobile-auth {
-  margin-top: auto;
-  padding-top: var(--space-6);
+  padding: var(--space-4);
   border-top: 1px solid var(--gray-200);
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .mobile-auth .user-email {
   font-size: var(--font-size-sm);
   color: var(--gray-500);
-  padding: 0 var(--space-4);
 }
 
 .mobile-auth button {
+  width: 100%;
+  padding: var(--space-3);
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-weight: 500;
   text-align: center;
+  cursor: pointer;
 }
 
 /* Mobile Responsive */
@@ -2441,15 +2486,40 @@ textarea:focus {
   }
   
   .landing-header {
-    padding: var(--space-3) var(--space-4);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-2) var(--space-4);
+  }
+  
+  .landing-header .logo-container {
+    flex: 0 0 auto;
+  }
+  
+  .landing-header .logo-text {
+    font-size: 1.1rem;
+  }
+  
+  .logo-emoji {
+    font-size: 1.5rem;
+  }
+  
+  .app-header {
+    flex-wrap: wrap;
+    padding: var(--space-2) var(--space-4);
   }
   
   .app-header nav {
-    display: none;
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    margin-top: var(--space-2);
+    gap: var(--space-1);
   }
   
-  .app-header .auth-section {
-    display: none;
+  .app-header nav button {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-sm);
   }
 }
 
@@ -2463,7 +2533,6 @@ textarea:focus {
     display: none;
   }
 }
-
 
 /* =====================================================
    FOOTER ENHANCEMENTS

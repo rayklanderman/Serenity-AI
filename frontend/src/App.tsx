@@ -119,9 +119,16 @@ const AppContent: React.FC = () => {
         {mobileMenuOpen && (
           <div className="mobile-nav-overlay" onClick={() => setMobileMenuOpen(false)}>
             <nav className="mobile-nav" onClick={(e) => e.stopPropagation()}>
-              <button onClick={() => { setCurrentPage("console"); setMobileMenuOpen(false); }}>💻 Console</button>
-              <button onClick={() => { setCurrentPage("about"); setMobileMenuOpen(false); }}>ℹ️ About</button>
-              <button onClick={() => { setCurrentPage("contact"); setMobileMenuOpen(false); }}>📬 Contact</button>
+              <div className="mobile-nav-header">
+                <span className="mobile-nav-title">Menu</span>
+                <button className="close-btn" onClick={() => setMobileMenuOpen(false)}>✕</button>
+              </div>
+              <div className="mobile-nav-links">
+                <button onClick={() => { setCurrentPage("landing"); setMobileMenuOpen(false); }}>🏠 Home</button>
+                <button onClick={() => { setCurrentPage("console"); setMobileMenuOpen(false); }}>💻 Console</button>
+                <button onClick={() => { setCurrentPage("about"); setMobileMenuOpen(false); }}>ℹ️ About</button>
+                <button onClick={() => { setCurrentPage("contact"); setMobileMenuOpen(false); }}>📬 Contact</button>
+              </div>
               <div className="mobile-auth">
                 {user ? (
                   <>
