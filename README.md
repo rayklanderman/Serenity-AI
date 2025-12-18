@@ -265,7 +265,7 @@ VITE_SUPABASE_ANON_KEY=your_anon_key
 
 ## 👥 Team
 
-**Ray Klanderman** - Veritas University  
+**Ray Klanderman** - Open University of Kenya (OUK)  
 Built for Jaseci AI Hackathon 2025 | MindMate Harmony Space Track
 
 ---
