@@ -78,10 +78,34 @@ const AuthModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         setTimeout(() => onClose(), 1500);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(getReadableError(errorMessage));
     } finally {
       setLoading(false);
     }
+  };
+
+  // Convert Supabase error messages to user-friendly messages
+  const getReadableError = (message: string): string => {
+    const errorMap: Record<string, string> = {
+      'Invalid login credentials': 'Incorrect email or password. Please try again.',
+      'Email not confirmed': 'Please check your email and click the verification link.',
+      'User already registered': 'This email is already registered. Try signing in instead.',
+      'Password should be at least 6 characters': 'Password must be at least 6 characters long.',
+      'Invalid email': 'Please enter a valid email address.',
+      'Signup requires a valid password': 'Please enter a password (minimum 6 characters).',
+      'Rate limit exceeded': 'Too many attempts. Please wait a moment and try again.',
+      'Network request failed': 'Connection error. Please check your internet connection.'
+    };
+
+    // Check for partial matches
+    for (const [key, value] of Object.entries(errorMap)) {
+      if (message.toLowerCase().includes(key.toLowerCase())) {
+        return value;
+      }
+    }
+
+    return message;
   };
 
   const getTitle = () => {

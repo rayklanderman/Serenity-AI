@@ -8,11 +8,15 @@ import EmotionGraph from "./components/EmotionGraph";
 import InsightsTimeline from "./components/InsightsTimeline";
 import TipsPanel from "./components/TipsPanel";
 import MindPlanner from "./components/MindPlanner";
+import TodayWidget from "./components/TodayWidget";
 import TriviaGames from "./components/TriviaGames";
 import About from "./components/About";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import AuthModal from "./components/AuthModal";
+import NotificationCenter from "./components/NotificationCenter";
+import NotificationPermissionPrompt from "./components/NotificationPermissionPrompt";
+import ProgressDashboard from "./components/ProgressDashboard";
 import type { UserContext, Emotion } from "./types";
 import { useMoodStorage, useJournalStorage } from "./hooks/useStorage";
 import "./styles/index.css";
@@ -198,6 +202,9 @@ const AppContent: React.FC = () => {
             <span className={`hamburger-line ${mobileMenuOpen ? 'open' : ''}`}></span>
           </button>
           
+          {/* Notification Bell - only for signed in users */}
+          {user && <NotificationCenter />}
+          
           <div className="auth-section desktop-auth">
             {user ? (
               <div className="user-menu">
@@ -285,6 +292,9 @@ const AppContent: React.FC = () => {
             <span className={`hamburger-line ${mobileMenuOpen ? 'open' : ''}`}></span>
           </button>
 
+          {/* Notification Bell - only for signed in users */}
+          {user && <NotificationCenter />}
+
           <div className="auth-section desktop-auth">
             {user ? (
               <div className="user-menu">
@@ -355,6 +365,9 @@ const AppContent: React.FC = () => {
             <span className={`hamburger-line ${mobileMenuOpen ? 'open' : ''}`}></span>
             <span className={`hamburger-line ${mobileMenuOpen ? 'open' : ''}`}></span>
           </button>
+
+          {/* Notification Bell - only for signed in users */}
+          {user && <NotificationCenter />}
 
           <div className="auth-section desktop-auth">
             {user ? (
@@ -450,6 +463,9 @@ const AppContent: React.FC = () => {
             Games
           </button>
         </nav>
+        
+        {/* Notification Bell - between nav and auth */}
+        <NotificationCenter />
         
         {/* Mobile Hamburger */}
         <button 
@@ -563,7 +579,10 @@ const AppContent: React.FC = () => {
                 moodHistory={moodHistory}
                 onNavigateToJournal={navigateToJournal}
               />
-              <TipsPanel userContext={userContext} currentMood={selectedMood} />
+              <div className="checkin-sidebar">
+                <TodayWidget onNavigateToPlanner={() => setActiveTab('planner')} />
+                <TipsPanel userContext={userContext} currentMood={selectedMood} />
+              </div>
             </div>
           )}
 
@@ -577,9 +596,12 @@ const AppContent: React.FC = () => {
           )}
 
           {activeTab === "insights" && (
-            <div className="insights-grid">
-              <EmotionGraph userContext={userContext} moodHistory={moodHistory} />
-              <InsightsTimeline userContext={userContext} moodHistory={moodHistory} />
+            <div className="insights-layout">
+              <div className="insights-grid">
+                <EmotionGraph userContext={userContext} moodHistory={moodHistory} />
+                <InsightsTimeline userContext={userContext} moodHistory={moodHistory} />
+              </div>
+              <ProgressDashboard />
             </div>
           )}
 
@@ -606,6 +628,9 @@ const AppContent: React.FC = () => {
       </footer>
 
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
+      
+      {/* Push Notification Permission Prompt */}
+      <NotificationPermissionPrompt />
     </div>
   );
 };

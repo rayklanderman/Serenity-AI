@@ -23,6 +23,7 @@ interface Activity {
   activity: string;
   icon: string;
   duration: string;
+  completed?: boolean;
 }
 
 interface Schedule {
@@ -82,6 +83,37 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
     const index = today === 0 ? 6 : today - 1;
     setCurrentDayIndex(index);
   }, []);
+
+  // Get formatted date for a day in the current week
+  const getDateForDay = (dayIndex: number): string => {
+    const today = new Date();
+    const currentDayOfWeek = today.getDay();
+    const currentIndex = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
+    
+    const diff = dayIndex - currentIndex;
+    const targetDate = new Date(today);
+    targetDate.setDate(today.getDate() + diff);
+    
+    return targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  // Check if a day index is today
+  const isToday = (dayIndex: number): boolean => {
+    const today = new Date().getDay();
+    const todayIndex = today === 0 ? 6 : today - 1;
+    return dayIndex === todayIndex;
+  };
+
+  // Get current time for display
+  const getCurrentTimeInfo = (): string => {
+    const now = new Date();
+    return now.toLocaleDateString('en-US', { 
+      weekday: 'long',
+      month: 'long', 
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -263,6 +295,44 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
     return '#ef4444';
   };
 
+  // Toggle activity completion
+  const toggleActivityComplete = async (dayIndex: number, actIndex: number) => {
+    if (!plan) return;
+    
+    const newPlan = [...plan];
+    const activity = newPlan[dayIndex].activities[actIndex];
+    activity.completed = !activity.completed;
+    
+    setPlan(newPlan);
+    
+    // Save to Supabase
+    if (user) {
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+      
+      await savePlan({
+        week_start: monday.toISOString().split('T')[0],
+        schedule_data: schedule,
+        plan_data: newPlan
+      });
+    }
+  };
+
+  // Calculate daily progress
+  const getDayProgress = (dayIndex: number) => {
+    if (!plan || !plan[dayIndex]) return { completed: 0, total: 0, percentage: 0 };
+    const activities = plan[dayIndex].activities;
+    const completed = activities.filter(a => a.completed).length;
+    const total = activities.length;
+    return {
+      completed,
+      total,
+      percentage: total > 0 ? Math.round((completed / total) * 100) : 0
+    };
+  };
+
   const navigateDay = (direction: 'prev' | 'next') => {
     setCurrentDayIndex(prev => {
       if (direction === 'prev') return prev > 0 ? prev - 1 : 6;
@@ -286,6 +356,7 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
       <div className="planner-header">
         <h2>🗓️ Mind Planner</h2>
         <p className="subtitle">Create your personalized 7-day wellness plan</p>
+        <p className="current-date">{getCurrentTimeInfo()}</p>
       </div>
 
       {/* Progress Steps */}
@@ -482,18 +553,43 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
                   transition={{ duration: 0.2 }}
                 >
                   <div className="day-header">
-                    <h4>{plan[currentDayIndex].day}</h4>
-                    <span 
-                      className="stress-badge"
-                      style={{ background: getStressColor(schedule.stressByDay[plan[currentDayIndex].day]) }}
-                    >
-                      Stress: {schedule.stressByDay[plan[currentDayIndex].day]}/10
+                    <div className="day-title-row">
+                      <h4>{plan[currentDayIndex].day}, {getDateForDay(currentDayIndex)}</h4>
+                      {isToday(currentDayIndex) && <span className="today-badge">Today</span>}
+                    </div>
+                    <div className="day-header-badges">
+                      <span 
+                        className="stress-badge"
+                        style={{ background: getStressColor(schedule.stressByDay[plan[currentDayIndex].day]) }}
+                      >
+                        Stress: {schedule.stressByDay[plan[currentDayIndex].day]}/10
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Progress Bar */}
+                  <div className="day-progress">
+                    <div className="progress-bar">
+                      <div 
+                        className="progress-fill"
+                        style={{ width: `${getDayProgress(currentDayIndex).percentage}%` }}
+                      />
+                    </div>
+                    <span className="progress-text">
+                      {getDayProgress(currentDayIndex).completed}/{getDayProgress(currentDayIndex).total} completed
                     </span>
                   </div>
                   
                   <div className="day-activities">
                     {plan[currentDayIndex].activities.map((act, j) => (
-                      <div key={act.id} className="activity-item editable">
+                      <div key={act.id} className={`activity-item editable ${act.completed ? 'completed' : ''}`}>
+                        <button 
+                          className={`activity-checkbox ${act.completed ? 'checked' : ''}`}
+                          onClick={() => toggleActivityComplete(currentDayIndex, j)}
+                          aria-label={act.completed ? 'Mark as incomplete' : 'Mark as complete'}
+                        >
+                          {act.completed ? '✓' : ''}
+                        </button>
                         <span className="act-icon">{act.icon}</span>
                         <div className="act-details">
                           <span className="act-time">{act.time}</span>
