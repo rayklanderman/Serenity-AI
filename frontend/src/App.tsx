@@ -56,11 +56,16 @@ const AppContent: React.FC = () => {
   const [headerVisible, setHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  // Auto-hide header/footer on scroll (Mobile only optimized)
+// Auto-hide header/footer on scroll (only active on console page)
   useEffect(() => {
     const handleScroll = () => {
+      if (currentPage !== "console") {
+        setHeaderVisible(true);
+        return;
+      }
+
       const currentScrollY = window.scrollY;
-      
+
       if (currentScrollY > lastScrollY && currentScrollY > 100) {
         // Scrolling down
         setHeaderVisible(false);
@@ -73,7 +78,7 @@ const AppContent: React.FC = () => {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+  }, [lastScrollY, currentPage]);
 
   // Storage hooks for persisting and loading data
   const { getMoods } = useMoodStorage();
@@ -159,9 +164,10 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // Header visibility class
-  const headerClass = headerVisible ? "" : "header-hidden";
-  const footerClass = headerVisible ? "" : "footer-hidden";
+  // Header visibility class - only apply autohide on console page
+  const shouldAutohide = currentPage === "console";
+  const headerClass = (headerVisible || !shouldAutohide) ? "" : "header-hidden";
+  const footerClass = (headerVisible || !shouldAutohide) ? "" : "footer-hidden";
 
   // Landing Page
   if (currentPage === "landing") {
@@ -245,9 +251,7 @@ const AppContent: React.FC = () => {
         )}
         
         <LandingPage onGetStarted={handleGetStarted} />
-        <div className={footerClass}>
-          <Footer onNavigate={handleNavigate} />
-        </div>
+        <Footer onNavigate={handleNavigate} className={footerClass} />
         
         {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
       </div>
@@ -319,9 +323,7 @@ const AppContent: React.FC = () => {
         <main className="app-content">
           <About />
         </main>
-        <div className={footerClass}>
-          <Footer onNavigate={handleNavigate} />
-        </div>
+        <Footer onNavigate={handleNavigate} className={footerClass} />
         {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
       </div>
     );
@@ -392,9 +394,7 @@ const AppContent: React.FC = () => {
         <main className="app-content">
           <Contact />
         </main>
-        <div className={footerClass}>
-          <Footer onNavigate={handleNavigate} />
-        </div>
+        <Footer onNavigate={handleNavigate} className={footerClass} />
         {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
       </div>
     );
@@ -402,45 +402,50 @@ const AppContent: React.FC = () => {
 
   // Console (Main App)
   return (
-    <div className="app-wrapper">
+    <div className="app-wrapper" role="application" aria-label="SerenityAI Wellness Console">
       <div className="aurora-background" />
       
       {/* Full-width header - outside container for consistent layout */}
-      <header className={`landing-header ${headerClass}`}>
+      <header className={`landing-header ${headerClass}`} role="banner">
         <div className="logo-container" onClick={() => setCurrentPage("landing")} style={{ cursor: 'pointer' }}>
           <img src="/logo.png" alt="SerenityAI" className="header-logo" />
           <span className="logo-text">SerenityAI</span>
           <span className="console-badge">Console</span>
         </div>
-        <nav className="landing-nav desktop-nav">
+        <nav className="landing-nav desktop-nav" role="navigation" aria-label="Main navigation">
           <button onClick={() => setCurrentPage("landing")}>Home</button>
           <button
             className={activeTab === "log" ? "active" : ""}
             onClick={() => setActiveTab("log")}
+            aria-current={activeTab === "log" ? "page" : undefined}
           >
             Check-in
           </button>
           <button
             className={activeTab === "journal" ? "active" : ""}
             onClick={() => setActiveTab("journal")}
+            aria-current={activeTab === "journal" ? "page" : undefined}
           >
-            Journal {journalEntries.length > 0 && <span className="badge">{journalEntries.length}</span>}
+            Journal {journalEntries.length > 0 && <span className="badge" aria-label={`${journalEntries.length} entries`}>{journalEntries.length}</span>}
           </button>
           <button
             className={activeTab === "insights" ? "active" : ""}
             onClick={() => setActiveTab("insights")}
+            aria-current={activeTab === "insights" ? "page" : undefined}
           >
             Insights
           </button>
           <button
             className={activeTab === "planner" ? "active" : ""}
             onClick={() => setActiveTab("planner")}
+            aria-current={activeTab === "planner" ? "page" : undefined}
           >
             Planner
           </button>
           <button
             className={activeTab === "games" ? "active" : ""}
             onClick={() => setActiveTab("games")}
+            aria-current={activeTab === "games" ? "page" : undefined}
           >
             Games
           </button>
@@ -540,7 +545,15 @@ const AppContent: React.FC = () => {
 
       {/* Content container with proper spacing */}
       <div className="console-content">
-        <main className="app-content">
+        {/* Loading state for initial data load */}
+        {user && !dataLoaded && (
+          <div className="data-loading" role="status" aria-live="polite">
+            <div className="loading-spinner" />
+            <p>Loading your wellness data...</p>
+          </div>
+        )}
+
+        <main className="app-content" role="main" aria-label={`${activeTab} section`}>
           {activeTab === "log" && (
             <div className="checkin-layout">
               <MoodWheel
@@ -579,9 +592,18 @@ const AppContent: React.FC = () => {
           )}
         </main>
       </div>
-      <div className={footerClass}>
-        <Footer onNavigate={handleNavigate} />
-      </div>
+
+      {/* Minimal footer for console */}
+      <footer className={`console-footer ${footerClass}`}>
+        <div className="console-footer-content">
+          <p className="console-footer-text">© 2025 SerenityAI</p>
+          <div className="console-footer-links">
+            <a href="https://github.com/rayklanderman/Serenity-AI" target="_blank" rel="noopener noreferrer" aria-label="View source code">
+              <span aria-hidden="true">⚡</span> GitHub
+            </a>
+          </div>
+        </div>
+      </footer>
 
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </div>

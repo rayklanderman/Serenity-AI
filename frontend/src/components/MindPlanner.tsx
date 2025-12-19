@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSwipeable } from 'react-swipeable';
 import { usePlannerStorage } from '../hooks/usePlannerStorage';
 import { useAuth } from '../contexts/AuthContext';
 import type { UserContext } from '../types';
@@ -269,6 +270,13 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
     });
   };
 
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => navigateDay('next'),
+    onSwipedRight: () => navigateDay('prev'),
+    preventScrollOnSwipe: true,
+    trackMouse: true
+  });
+
   return (
     <motion.div 
       className="card mind-planner"
@@ -300,12 +308,15 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
           animate={{ opacity: 1, x: 0 }}
         >
           <h3>What best describes you?</h3>
-          <div className="occupation-grid">
+          <div className="occupation-grid" role="radiogroup" aria-label="Occupation selection">
             {OCCUPATIONS.map(occ => (
               <button
                 key={occ.id}
                 className={`occupation-btn ${schedule.occupation === occ.id ? 'selected' : ''}`}
                 onClick={() => setSchedule(prev => ({ ...prev, occupation: occ.id }))}
+                role="radio"
+                aria-checked={schedule.occupation === occ.id}
+                aria-label={`${occ.label} occupation`}
               >
                 <span className="occ-icon">{occ.icon}</span>
                 <span>{occ.label}</span>
@@ -331,12 +342,15 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
         >
           <h3>Which days are you typically busy?</h3>
           <p className="step-hint">Select your work/study days</p>
-          <div className="days-grid">
+          <div className="days-grid" role="group" aria-label="Work days selection">
             {DAYS.map(day => (
               <button
                 key={day}
                 className={`day-btn ${schedule.workDays.includes(day) ? 'selected' : ''}`}
                 onClick={() => toggleWorkDay(day)}
+                role="checkbox"
+                aria-checked={schedule.workDays.includes(day)}
+                aria-label={`${day} ${schedule.workDays.includes(day) ? 'selected' : 'not selected'}`}
               >
                 {day.slice(0, 3)}
               </button>
@@ -391,7 +405,7 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
           <h3>Rate your typical stress level by day</h3>
           <p className="step-hint">This helps us tailor your wellness activities</p>
           
-          <div className="stress-sliders">
+          <div className="stress-sliders" role="group" aria-label="Stress level ratings by day">
             {DAYS.map(day => (
               <div key={day} className="stress-row">
                 <span className="day-label">{day.slice(0, 3)}</span>
@@ -402,10 +416,16 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
                   value={schedule.stressByDay[day]}
                   onChange={(e) => updateStress(day, parseInt(e.target.value))}
                   style={{ '--stress-color': getStressColor(schedule.stressByDay[day]) } as React.CSSProperties}
+                  aria-label={`Stress level for ${day}`}
+                  aria-valuemin={1}
+                  aria-valuemax={10}
+                  aria-valuenow={schedule.stressByDay[day]}
+                  aria-valuetext={`Level ${schedule.stressByDay[day]} out of 10`}
                 />
                 <span 
                   className="stress-value"
                   style={{ color: getStressColor(schedule.stressByDay[day]) }}
+                  aria-live="polite"
                 >
                   {schedule.stressByDay[day]}
                 </span>
@@ -436,10 +456,17 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
           <h3>Your 7-Day Wellness Plan</h3>
           
           {/* Carousel Container */}
-          <div className="plan-carousel">
+          <div 
+            className="plan-carousel" 
+            {...swipeHandlers}
+            role="region"
+            aria-label="Weekly wellness plan carousel"
+            aria-live="polite"
+          >
             <button 
               className="carousel-arrow carousel-prev" 
               onClick={() => navigateDay('prev')}
+              aria-label="Previous day"
             >
               ◀
             </button>
@@ -510,19 +537,23 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
             <button 
               className="carousel-arrow carousel-next" 
               onClick={() => navigateDay('next')}
+              aria-label="Next day"
             >
               ▶
             </button>
           </div>
 
           {/* Day Indicator Dots */}
-          <div className="carousel-dots">
+          <div className="carousel-dots" role="tablist" aria-label="Day navigation">
             {plan.map((dayPlan, i) => (
               <button
                 key={i}
                 className={`carousel-dot ${i === currentDayIndex ? 'active' : ''}`}
                 onClick={() => setCurrentDayIndex(i)}
                 title={dayPlan.day}
+                role="tab"
+                aria-selected={i === currentDayIndex}
+                aria-label={`Go to ${dayPlan.day}`}
               >
                 {dayPlan.day.slice(0, 1)}
               </button>
@@ -537,14 +568,17 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
 
       {/* Edit Activity Modal */}
       {editingActivity && (
-        <div className="modal-overlay" onClick={() => setEditingActivity(null)}>
+        <div className="modal-overlay" onClick={() => setEditingActivity(null)} role="presentation">
           <motion.div 
             className="edit-modal"
             onClick={e => e.stopPropagation()}
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="edit-modal-title"
           >
-            <h3>Edit Activity</h3>
+            <h3 id="edit-modal-title">Edit Activity</h3>
             <div className="edit-form">
               <label>
                 Time
@@ -584,14 +618,17 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
 
       {/* Add Activity Modal */}
       {showAddModal && (
-        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+        <div className="modal-overlay" onClick={() => setShowAddModal(false)} role="presentation">
           <motion.div 
             className="edit-modal"
             onClick={e => e.stopPropagation()}
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="add-modal-title"
           >
-            <h3>Add Activity to {plan?.[addDayIndex]?.day}</h3>
+            <h3 id="add-modal-title">Add Activity to {plan?.[addDayIndex]?.day}</h3>
             <div className="edit-form">
               <label>
                 Time
