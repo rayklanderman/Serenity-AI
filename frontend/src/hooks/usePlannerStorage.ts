@@ -164,11 +164,12 @@ export const useGameStorage = () => {
         .eq('user_id', user.id)
         .eq('game_type', gameType)
         .order('score', { ascending: false })
-        .limit(1)
-        .single();
+        .limit(1);
 
-      if (error && error.code !== 'PGRST116') throw error;
-      return data as GameScore | null;
+      if (error) throw error;
+      
+      // Return first result or null if no scores yet
+      return data && data.length > 0 ? data[0] as GameScore : null;
     } catch (err) {
       console.error('[GameStorage] Error getting high score:', err);
       return null;
