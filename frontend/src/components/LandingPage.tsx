@@ -13,7 +13,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       description: 'Track your emotions with our intuitive emoji wheel and receive personalized AI responses.'
     },
     {
-      icon: '🧘',
+      icon: '🧠',
       title: 'Mind Coach',
       description: 'Get productivity tips that respect your mental state - because wellness comes first.'
     },
@@ -118,7 +118,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
               className="float-emoji e3"
               animate={{ y: [-5, 15, -5] }}
               transition={{ duration: 3.5, repeat: Infinity }}
-            >🧘</motion.span>
+            >💜</motion.span>
             <motion.span 
               className="float-emoji e4"
               animate={{ y: [5, -15, 5] }}

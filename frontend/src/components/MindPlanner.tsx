@@ -148,7 +148,7 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
             id: generateId(),
             time: '7:00 AM', 
             activity: stress > 6 ? 'Gentle morning stretch' : 'Energizing yoga flow',
-            icon: '🧘',
+            icon: '🧠',
             duration: '15 min'
           },
           { 

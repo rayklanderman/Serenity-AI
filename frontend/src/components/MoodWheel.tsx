@@ -294,7 +294,7 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
             <button className="modal-close" onClick={() => setShowAIModal(false)}>×</button>
             
             <div className="modal-header ai-modal-header">
-              <div className="ai-avatar-large">🧘</div>
+              <div className="ai-avatar-large">🧠</div>
               <div>
                 <h2>SerenityAI</h2>
                 <p className="ai-subtitle">Your wellness companion</p>
@@ -382,7 +382,7 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
               </div>
               {selectedEntry.aiResponse && (
                 <div className="modal-section ai-section">
-                  <h4>🧘 AI Response</h4>
+                  <h4>✨ AI Response</h4>
                   <p>{selectedEntry.aiResponse}</p>
                 </div>
               )}

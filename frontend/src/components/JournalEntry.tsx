@@ -159,7 +159,7 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
               }}
             >
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
-                <span style={{ fontSize: '1.5rem' }}>🧘</span>
+                <span style={{ fontSize: '1.5rem' }}>🧠</span>
                 <div style={{ flex: 1 }}>
                   <h4 style={{ margin: '0 0 var(--space-2) 0', color: 'var(--primary)', fontSize: '0.9rem' }}>
                     ✨ AI Insight

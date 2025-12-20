@@ -77,7 +77,7 @@ const TipsPanel: React.FC<TipsPanelProps> = ({ userContext, currentMood }) => {
           className={`coach-btn ${mode === 'mindfulness' ? 'active' : ''}`}
           onClick={() => setMode('mindfulness')}
         >
-          🧘 Mindfulness
+          🧠 Mindfulness
         </button>
         <button 
           className={`coach-btn ${mode === 'coach' ? 'active' : ''}`}

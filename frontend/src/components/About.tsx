@@ -5,7 +5,7 @@ const About: React.FC = () => {
     { icon: '🎯', title: 'Track Your Mood', desc: 'Log emotions daily and see patterns emerge' },
     { icon: '🤖', title: 'AI Companion', desc: 'Get personalized, empathetic support' },
     { icon: '📈', title: 'See Progress', desc: 'Weekly insights show your emotional growth' },
-    { icon: '🧘', title: 'Mindfulness', desc: 'Breathing exercises and calming tips' },
+    { icon: '🧠', title: 'Mindfulness', desc: 'Breathing exercises and calming tips' },
     { icon: '📝', title: 'Journal', desc: 'Write freely with AI-powered insights' },
     { icon: '💪', title: 'Mind Coach', desc: 'Productivity tips that respect your mental state' },
   ];
