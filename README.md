@@ -1,4 +1,8 @@
-# SerenityAI 🧘‍♀️
+# SerenityAI 🧠
+
+<p align="center">
+  <img src="frontend/public/icon_512.png" alt="SerenityAI Logo" width="120" />
+</p>
 
 **AI-Powered Mental Wellness Companion**
 
