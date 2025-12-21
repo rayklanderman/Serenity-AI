@@ -83,8 +83,48 @@ Major frontend restructure: Added landing page, contact page, improved footer, f
 
 ---
 
+## December 21, 2025 (Late Night Session)
+
+### Journal Entry UI Redesign
+
+- AI response now appears as **popup modal** (consistent with mood check-in)
+- Mood-specific modal titles (e.g., "✨ Beautiful Reflection" for happy, "🔥 Powerful Release" for angry)
+- Journal entries redesigned as **modern cards** with:
+  - Mood change indicator badges
+  - Expandable AI insights
+  - Click to expand/collapse
+
+### Mood-Aware Journal Button
+
+- Button now **always appears** in AI response modal
+- Text changes based on mood:
+  - Happy → "✨ Capture This Joy"
+  - Angry → "🔥 Take a Load Off"
+  - Sad → "💜 Express Your Heart"
+  - etc.
+
+### Debug Logging
+
+- Added console logs to `useJac.ts` for API debugging
+- Improved fallback responses to be mood-aware
+
+### Files Modified
+
+- `frontend/src/components/JournalEntry.tsx` - Complete redesign
+- `frontend/src/components/MoodWheel.tsx` - Mood-specific journal button
+- `frontend/src/hooks/useJac.ts` - Debug logging + improved fallbacks
+
+### Commits
+
+| Commit    | Description                              |
+| --------- | ---------------------------------------- |
+| `f2242e0` | Journal UI redesign + mood-aware buttons |
+
+---
+
 ## Next Steps
 
-1. **Deploy backend on Render** - Required for CORS fix
-2. **Add hero images** - Use Nano Banana for landing page visuals
-3. **Test production** - Verify all features work on Vercel
+1. ~~Deploy backend on Render~~ ✅ Done
+2. ~~Add hero images~~ - Optional
+3. ~~Test production~~ ✅ Groq API working
+4. **Demo recording** - For hackathon submission
