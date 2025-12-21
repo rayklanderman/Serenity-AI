@@ -162,21 +162,25 @@ patterns = detect_patterns(mood_history);  // byLLM call
 
 ## ✨ Features
 
-| Feature                 | Description                       | Status  |
-| ----------------------- | --------------------------------- | ------- |
-| **Mood Check-in**       | 6 moods with AI empathy           | ✅ Live |
-| **Voice Input**         | Speech-to-text logging            | ✅ Live |
-| **Smart Journal**       | AI insights + mood tracking       | ✅ Live |
-| **Emotion Graphs**      | Timeline + Radar visualization    | ✅ Live |
-| **Weekly Insights**     | TrendAnalyzer patterns            | ✅ Live |
-| **Mind Planner**        | 7-day wellness carousel           | ✅ Live |
-| **Activity Completion** | Checkboxes + daily progress bar   | ✅ Live |
-| **Today Widget**        | Quick view of daily activities    | ✅ Live |
-| **Notification Center** | In-app notification system        | ✅ Live |
-| **Push Notifications**  | Activity reminders (PWA)          | ✅ Live |
-| **Progress Dashboard**  | Weekly stats + achievement badges | ✅ Live |
-| **Mind Games**          | 3 levels, 24 shuffled questions   | ✅ Live |
-| **Supabase Auth**       | Email/password + guest mode       | ✅ Live |
+| Feature                    | Description                         | Status  |
+| -------------------------- | ----------------------------------- | ------- |
+| **Mood Check-in**          | 6 moods with AI empathy responses   | ✅ Live |
+| **Voice Input**            | Speech-to-text logging              | ✅ Live |
+| **Smart Journal**          | AI insights + mood tracking         | ✅ Live |
+| **Emotion Graphs**         | Timeline + Radar visualization      | ✅ Live |
+| **Weekly Insights**        | TrendAnalyzer patterns              | ✅ Live |
+| **Mind Planner**           | 7-day wellness carousel             | ✅ Live |
+| **Activity Completion**    | Checkboxes + daily progress bar     | ✅ Live |
+| **Activity Reminders**     | Push notifications 5 min before     | ✅ Live |
+| **Today Widget**           | Quick view of daily activities      | ✅ Live |
+| **Notification Center**    | In-app notification system          | ✅ Live |
+| **Push Notifications**     | PWA notifications for reminders     | ✅ Live |
+| **Progress Dashboard**     | Weekly stats + achievement badges   | ✅ Live |
+| **Mind Games**             | 3 levels, 24 shuffled questions     | ✅ Live |
+| **Supabase Auth**          | Email/password + guest mode         | ✅ Live |
+| **🎮 Gamification System** | Points, levels, streaks, 8 badges   | ✅ NEW  |
+| **📊 Points Tracking**     | +10 mood, +25 journal, +20 activity | ✅ NEW  |
+| **🔥 Streak Rewards**      | Daily/weekly streak bonuses         | ✅ NEW  |
 
 ---
 

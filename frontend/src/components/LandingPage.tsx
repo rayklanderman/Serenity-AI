@@ -10,12 +10,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
     {
       icon: '😊',
       title: 'Mood Check-in',
-      description: 'Track your emotions with our intuitive emoji wheel and receive personalized AI responses.'
-    },
-    {
-      icon: '🧠',
-      title: 'Mind Coach',
-      description: 'Get productivity tips that respect your mental state - because wellness comes first.'
+      description: 'Track emotions with our intuitive mood wheel and receive personalized AI empathy responses.'
     },
     {
       icon: '📝',
@@ -23,9 +18,24 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       description: 'Write freely and receive AI-powered insights that help you understand your thoughts.'
     },
     {
+      icon: '📅',
+      title: 'Mind Planner',
+      description: '7-day personalized wellness plans with activity reminders to keep you on track.'
+    },
+    {
+      icon: '🎮',
+      title: 'Gamification',
+      description: 'Earn points, unlock badges, and build streaks as you develop healthy habits.'
+    },
+    {
       icon: '📊',
-      title: 'Pattern Analysis',
-      description: 'Discover trends in your emotional wellbeing with weekly insights and recommendations.'
+      title: 'Insights & Trends',
+      description: 'Beautiful charts showing your mood patterns and emotional trends over time.'
+    },
+    {
+      icon: '🧩',
+      title: 'Mind Games',
+      description: 'Fun trivia games designed to boost mental wellness and score tracking.'
     }
   ];
 
@@ -133,8 +143,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
         >
-          <h2>Powered by 6 Intelligent Agents</h2>
-          <p>Built with JacLang's byLLM architecture for personalized, empathetic support</p>
+          <h2>Your Complete Wellness Toolkit</h2>
+          <p>AI-powered features designed to help you build lasting mental wellness habits</p>
         </motion.div>
 
         <motion.div 
