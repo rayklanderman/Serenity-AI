@@ -359,6 +359,29 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
                 <h2>SerenityAI</h2>
                 <p className="ai-subtitle">Your wellness companion</p>
               </div>
+              
+              {/* Points Earned Badge - Shows in modal */}
+              {pointsEarned && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.5rem 0.75rem',
+                    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                    color: 'white',
+                    borderRadius: 'var(--radius-full)',
+                    fontWeight: 600,
+                    fontSize: '0.85rem',
+                    marginLeft: 'auto',
+                  }}
+                >
+                  🎉 +{pointsEarned} pts
+                  {currentStreak > 1 && <span>🔥{currentStreak}</span>}
+                </motion.div>
+              )}
             </div>
             
             <div className="modal-body">
