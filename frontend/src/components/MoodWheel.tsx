@@ -45,6 +45,17 @@ const MOODS: Emotion[] = [
   { name: 'angry', emoji: '😠', color: '#ef4444' },
 ];
 
+// Smart loading messages that rotate during AI response generation
+const LOADING_MESSAGES = [
+  { emoji: '🧠', text: 'Personalizing your wellness insight...' },
+  { emoji: '✨', text: 'Analyzing your emotional patterns...' },
+  { emoji: '💭', text: 'Crafting a thoughtful response just for you...' },
+  { emoji: '🌱', text: 'Your mental health journey matters...' },
+  { emoji: '💫', text: 'Almost there! Creating your personalized guidance...' },
+  { emoji: '🌈', text: 'Take a deep breath while we prepare your insight...' },
+  { emoji: '💜', text: 'Every check-in is a step toward wellness...' },
+];
+
 interface MoodWheelProps {
   userContext: UserContext;
   onMoodSelect?: (mood: Emotion) => void;
@@ -81,6 +92,7 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
   const [showSuccess, setShowSuccess] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<MoodEntry | null>(null);
   const [pointsEarned, setPointsEarned] = useState<number | null>(null);
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const { spawn, loading, data } = useJac('MoodLogger');
   const { saveMood } = useMoodStorage();
   const { awardPoints, currentStreak, newBadge, dismissBadge } = useGamification();
@@ -105,6 +117,18 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
       setShowAIModal(true);
     }
   }, [data?.response]);
+
+  // Rotate loading messages every 2.5 seconds while loading
+  useEffect(() => {
+    if (!loading) {
+      setLoadingMessageIndex(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setLoadingMessageIndex(prev => (prev + 1) % LOADING_MESSAGES.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [loading]);
 
   const handleMoodClick = (mood: Emotion) => {
     setSelectedMood(mood);
@@ -186,10 +210,19 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
     }).format(date);
   };
 
-  const shouldShowJournalButton = data?.response && 
-    (data.response.toLowerCase().includes('journal') || 
-     data.response.toLowerCase().includes('write') ||
-     data.response.toLowerCase().includes('express'));
+  // Mood-specific journal button text
+  const getJournalButtonText = () => {
+    const mood = selectedMood?.name || data?.emotion?.name || 'neutral';
+    const buttonTexts: Record<string, { emoji: string; text: string }> = {
+      'happy': { emoji: '✨', text: 'Capture This Joy' },
+      'calm': { emoji: '🌿', text: 'Reflect & Ground' },
+      'neutral': { emoji: '📝', text: 'Start Journaling' },
+      'anxious': { emoji: '💭', text: 'Write It Out' },
+      'sad': { emoji: '💜', text: 'Express Your Heart' },
+      'angry': { emoji: '🔥', text: 'Take a Load Off' }
+    };
+    return buttonTexts[mood] || buttonTexts['neutral'];
+  };
 
   return (
     <div className="mood-wheel-section">
@@ -260,7 +293,7 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
         >
           {loading ? (
             <span className="btn-loading">
-              <span className="spinner"></span> Connecting...
+              <span className="spinner"></span> Creating your insight...
             </span>
           ) : (
             <>
@@ -269,8 +302,97 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
           )}
         </button>
 
+        {/* Smart Loading Overlay */}
+        {loading && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="loading-overlay-card"
+            style={{
+              marginTop: 'var(--space-4)',
+              padding: 'var(--space-6)',
+              background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1))',
+              borderRadius: 'var(--radius-xl)',
+              border: '1px solid rgba(139, 92, 246, 0.2)',
+              textAlign: 'center',
+            }}
+          >
+            {/* Pulsing emoji */}
+            <motion.div
+              animate={{ 
+                scale: [1, 1.1, 1],
+                opacity: [0.7, 1, 0.7]
+              }}
+              transition={{ 
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              style={{ fontSize: '3rem', marginBottom: 'var(--space-3)' }}
+            >
+              {LOADING_MESSAGES[loadingMessageIndex].emoji}
+            </motion.div>
+            
+            {/* Rotating message */}
+            <motion.p
+              key={loadingMessageIndex}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              style={{
+                fontSize: '1.1rem',
+                fontWeight: 500,
+                color: 'var(--text-primary)',
+                marginBottom: 'var(--space-4)',
+              }}
+            >
+              {LOADING_MESSAGES[loadingMessageIndex].text}
+            </motion.p>
+            
+            {/* Animated dots */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+              {[0, 1, 2].map((i) => (
+                <motion.span
+                  key={i}
+                  animate={{
+                    scale: [1, 1.3, 1],
+                    opacity: [0.4, 1, 0.4],
+                  }}
+                  transition={{
+                    duration: 1,
+                    repeat: Infinity,
+                    delay: i * 0.2,
+                  }}
+                  style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: 'var(--accent)',
+                  }}
+                />
+              ))}
+            </div>
+            
+            {/* Wellness tip */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1 }}
+              style={{
+                marginTop: 'var(--space-4)',
+                fontSize: '0.85rem',
+                color: 'var(--text-secondary)',
+                fontStyle: 'italic',
+              }}
+            >
+              💡 Tip: Taking a deep breath can help reduce stress in seconds!
+            </motion.p>
+          </motion.div>
+        )}
+
         {/* Success message with points */}
-        {showSuccess && !data && (
+        {showSuccess && !data && !loading && (
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -427,7 +549,7 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
                   </button>
                 )}
                 
-                {shouldShowJournalButton && onNavigateToJournal && (
+                {onNavigateToJournal && (
                   <button 
                     className="action-btn primary"
                     onClick={() => {
@@ -435,7 +557,7 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
                       onNavigateToJournal();
                     }}
                   >
-                    📝 Start Journaling
+                    {getJournalButtonText().emoji} {getJournalButtonText().text}
                   </button>
                 )}
                 

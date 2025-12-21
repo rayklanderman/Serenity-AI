@@ -10,6 +10,7 @@ import type {
 
 // Get API URL from environment or use default
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+console.log(`[useJac] 🔧 API_URL configured as: ${API_URL}`);
 
 type WalkerName = 'MoodLogger' | 'TrendAnalyzer' | 'SuggestionGenerator' | 'JournalSaver' | 'MindCoach';
 
@@ -42,6 +43,7 @@ export const useJac = <T extends WalkerName>(walkerName: T): UseJacReturn<T> => 
   const spawn = useCallback(async (payload: Record<string, unknown>): Promise<WalkerResponse<T> | null> => {
     setLoading(true);
     setError(null);
+    console.log(`[useJac] 🚀 Calling ${walkerName} at ${API_URL}/walker/${walkerName}`);
     try {
       // Jac serve exposes walkers at /walker/{WalkerName}
       const response = await fetch(`${API_URL}/walker/${walkerName}`, {
@@ -52,12 +54,15 @@ export const useJac = <T extends WalkerName>(walkerName: T): UseJacReturn<T> => 
         body: JSON.stringify(payload),
       });
 
+      console.log(`[useJac] 📡 Response status: ${response.status}`);
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `API error: ${response.status}`);
       }
 
       const result = await response.json();
+      console.log(`[useJac] ✅ Got REAL API response from ${walkerName}`);
       
       // Jac serve returns { result: ..., reports: [...] }
       // The actual data we want is in reports[0] or result
@@ -68,8 +73,48 @@ export const useJac = <T extends WalkerName>(walkerName: T): UseJacReturn<T> => 
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error');
       setError(error);
-      console.error(`[useJac] Error spawning ${walkerName}:`, error);
+      console.error(`[useJac] ❌ Error spawning ${walkerName}:`, error);
+      console.warn(`[useJac] ⚠️ Using FALLBACK response for ${walkerName}`);
       
+      // Mood-aware fallback for MoodLogger
+      const getMoodLoggerFallback = () => {
+        // Extract mood from mood_text like "Feeling happy" or emoji
+        const moodText = (payload?.mood_text as string)?.toLowerCase() || '';
+        const emoji = payload?.emoji as string || '';
+        
+        // Detect mood from text or emoji
+        const moodMap: Record<string, { name: string; color: string; response: string }> = {
+          'happy': { name: 'happy', color: '#22c55e', response: "Your joy is contagious! 🌟 Savor this wonderful feeling and consider sharing it with someone. What specific moment sparked this happiness?" },
+          'calm': { name: 'calm', color: '#3b82f6', response: "Your inner peace is beautiful. 🧘 This centered state is perfect for reflection. What's helping you feel so balanced today?" },
+          'neutral': { name: 'neutral', color: '#6b7280', response: "A balanced state is powerful. ⚖️ This is a great time to set intentions and explore what would bring positive energy to your day." },
+          'anxious': { name: 'anxious', color: '#f59e0b', response: "I hear you. 💛 Anxiety is your mind trying to protect you. Let's take a moment to ground ourselves. Try naming 5 things you can see around you." },
+          'sad': { name: 'sad', color: '#6366f1', response: "Your feelings are valid. 💜 It takes courage to acknowledge sadness. Be gentle with yourself today - even small acts of self-care matter." },
+          'angry': { name: 'angry', color: '#ef4444', response: "Your anger is telling you something important. 🔥 Let's channel this energy constructively. What boundary needs to be respected?" }
+        };
+        
+        // Try to match mood
+        let detectedMood = 'neutral';
+        for (const mood of Object.keys(moodMap)) {
+          if (moodText.includes(mood) || 
+              (mood === 'happy' && (emoji === '😊' || emoji.includes('happy'))) ||
+              (mood === 'calm' && emoji === '😌') ||
+              (mood === 'anxious' && emoji === '😰') ||
+              (mood === 'sad' && emoji === '😢') ||
+              (mood === 'angry' && emoji === '😠') ||
+              (mood === 'neutral' && emoji === '😐')) {
+            detectedMood = mood;
+            break;
+          }
+        }
+        
+        const moodInfo = moodMap[detectedMood];
+        return {
+          analysis: { emotion: moodInfo.name, intensity: 7, triggers: ["self-reflection"], sentiment: detectedMood === 'anxious' || detectedMood === 'sad' || detectedMood === 'angry' ? 'negative' : 'positive' },
+          response: moodInfo.response,
+          emotion: { name: moodInfo.name, intensity: 7, color: moodInfo.color }
+        };
+      };
+
       // Return intelligent fallback responses for demo purposes
       const getMoodAwareTip = () => {
         const mood = (payload?.current_mood as string) || 'neutral';
@@ -127,11 +172,7 @@ export const useJac = <T extends WalkerName>(walkerName: T): UseJacReturn<T> => 
       };
 
       const mockResponses: Record<WalkerName, unknown> = {
-        'MoodLogger': {
-          analysis: { emotion: "calm", intensity: 7, triggers: ["self-reflection"], sentiment: "positive" },
-          response: "Thank you for sharing. Taking time to acknowledge your feelings is a beautiful act of self-care. You're doing great! 🌟",
-          emotion: { name: "calm", intensity: 7, color: "#98FB98" }
-        },
+        'MoodLogger': getMoodLoggerFallback(),
         'TrendAnalyzer': {
           patterns: {
             recurring_emotions: ["calm", "happy"],
@@ -143,12 +184,13 @@ export const useJac = <T extends WalkerName>(walkerName: T): UseJacReturn<T> => 
         'JournalSaver': {
           entry_id: String(Date.now()),
           mood_change: 1,
-          response: "Your thoughts are valuable. Writing helps process emotions and gain clarity. Keep journaling! ✨"
+          response: "Your thoughts are valuable. ✨ Writing helps process emotions and gain clarity. Keep journaling!"
         },
         'MindCoach': getMindCoachTips()
       };
       
       const fallback = mockResponses[walkerName] as WalkerResponse<T>;
+      console.log(`[useJac] 📦 Fallback response for ${walkerName}:`, JSON.stringify(fallback).substring(0, 200));
       setData(fallback);
       return fallback;
     } finally {
