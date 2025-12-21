@@ -194,3 +194,34 @@ CREATE POLICY "Users can insert own scores" ON game_scores
 
 CREATE POLICY "Users can update own scores" ON game_scores
   FOR UPDATE USING (auth.uid() = user_id);
+
+-- =====================================================
+-- USER GAMIFICATION TABLE
+-- Points, levels, streaks, badges persistence
+-- =====================================================
+CREATE TABLE IF NOT EXISTS user_gamification (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  state_data JSONB NOT NULL DEFAULT '{
+    "points": 0,
+    "totalCheckins": 0,
+    "totalJournals": 0,
+    "currentStreak": 0,
+    "longestStreak": 0,
+    "lastCheckinDate": null,
+    "unlockedBadges": []
+  }',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- RLS Policies
+ALTER TABLE user_gamification ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own gamification" ON user_gamification
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own gamification" ON user_gamification
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own gamification" ON user_gamification
+  FOR UPDATE USING (auth.uid() = user_id);
