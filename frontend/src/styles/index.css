@@ -249,7 +249,34 @@ body {
   .checkin-sidebar {
     order: -1;
   }
+  
+  /* Fix mobile console content overflow */
+  .console-content {
+    padding: 1rem;
+    overflow-x: hidden;
+  }
+  
+  /* Ensure cards don't overflow on mobile */
+  .mood-wheel-section,
+  .mood-input-card,
+  .card {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Fix mood grid on mobile */
+  .mood-grid {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  /* Prevent button overflow */
+  .primary-btn,
+  .log-btn {
+    max-width: 100%;
+  }
 }
+
 
 /* =====================================================
    HEADER - Standard Flat Bar
