@@ -52,9 +52,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <div className="hero-badge">
-            <span>🏆</span> Jaseci AI Hackathon 2025
-          </div>
           
           <h1 className="hero-title">
             Your AI-Powered
