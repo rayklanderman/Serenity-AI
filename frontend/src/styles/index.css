@@ -2330,14 +2330,41 @@ textarea:focus {
 
 .float-emoji {
   position: absolute;
-  font-size: 4rem;
+  font-size: 3.5rem;
   filter: drop-shadow(0 10px 30px rgba(0,0,0,0.1));
 }
 
-.float-emoji.e1 { top: 0; left: 50%; transform: translateX(-50%); }
-.float-emoji.e2 { top: 50%; right: 0; transform: translateY(-50%); }
-.float-emoji.e3 { bottom: 0; left: 50%; transform: translateX(-50%); }
-.float-emoji.e4 { top: 50%; left: 0; transform: translateY(-50%); }
+/* Diamond pattern positioning */
+.floating-emojis.diamond-pattern .float-emoji.diamond-top {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.floating-emojis.diamond-pattern .float-emoji.diamond-left {
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+
+.floating-emojis.diamond-pattern .float-emoji.diamond-center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 5rem; /* Larger globe in center */
+}
+
+.floating-emojis.diamond-pattern .float-emoji.diamond-right {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+.floating-emojis.diamond-pattern .float-emoji.diamond-bottom {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
 
 /* Features Section */
 .features-section {
@@ -2362,9 +2389,10 @@ textarea:focus {
   margin: 0;
 }
 
+/* 3x2 grid on desktop for 6 feature cards */
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--space-6);
 }
 

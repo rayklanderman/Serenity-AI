@@ -110,27 +110,33 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.3 }}
         >
-          <div className="floating-emojis">
+          <div className="floating-emojis diamond-pattern">
+            {/* Diamond pattern: top, left, center (globe), right, bottom */}
             <motion.span 
-              className="float-emoji e1"
-              animate={{ y: [-10, 10, -10] }}
+              className="float-emoji diamond-top"
+              animate={{ y: [-8, 8, -8] }}
               transition={{ duration: 3, repeat: Infinity }}
             >😊</motion.span>
             <motion.span 
-              className="float-emoji e2"
-              animate={{ y: [10, -10, 10] }}
+              className="float-emoji diamond-left"
+              animate={{ y: [5, -10, 5] }}
               transition={{ duration: 2.5, repeat: Infinity }}
+            >💜</motion.span>
+            <motion.span 
+              className="float-emoji diamond-center"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 4, repeat: Infinity }}
+            >🌍</motion.span>
+            <motion.span 
+              className="float-emoji diamond-right"
+              animate={{ y: [-5, 10, -5] }}
+              transition={{ duration: 2.8, repeat: Infinity }}
             >😌</motion.span>
             <motion.span 
-              className="float-emoji e3"
-              animate={{ y: [-5, 15, -5] }}
-              transition={{ duration: 3.5, repeat: Infinity }}
-            >💜</motion.span>
-            <motion.span 
-              className="float-emoji e4"
-              animate={{ y: [5, -15, 5] }}
-              transition={{ duration: 2.8, repeat: Infinity }}
-            >💜</motion.span>
+              className="float-emoji diamond-bottom"
+              animate={{ y: [8, -8, 8] }}
+              transition={{ duration: 3.2, repeat: Infinity }}
+            >✨</motion.span>
           </div>
         </motion.div>
       </section>
