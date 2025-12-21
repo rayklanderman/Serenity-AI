@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStorage } from '../hooks/usePlannerStorage';
+import { useGamification } from '../hooks/useGamification';
 import { Brain, Zap, Trophy, Star, RefreshCw, ArrowRight, Lock } from 'lucide-react';
 
 type Difficulty = 'easy' | 'medium' | 'hard';
@@ -229,6 +230,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 
 const TriviaGames: React.FC = () => {
   const { saveScore, getHighScore } = useGameStorage();
+  const { awardPoints } = useGamification();
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -259,6 +261,16 @@ const TriviaGames: React.FC = () => {
         medium: mediumScore?.score ?? null,
         hard: hardScore?.score ?? null
       };
+      
+      // Also check localStorage for guest user scores
+      const localScores = localStorage.getItem('serenity_game_scores');
+      if (localScores) {
+        const parsed = JSON.parse(localScores);
+        if (parsed.easy && (!scores.easy || parsed.easy > scores.easy)) scores.easy = parsed.easy;
+        if (parsed.medium && (!scores.medium || parsed.medium > scores.medium)) scores.medium = parsed.medium;
+        if (parsed.hard && (!scores.hard || parsed.hard > scores.hard)) scores.hard = parsed.hard;
+      }
+      
       setHighScores(scores);
       
       // Unlock levels based on performance (70%+ unlocks next level)
@@ -301,7 +313,7 @@ const TriviaGames: React.FC = () => {
 
   const question = questions[currentQuestion];
 
-  const handleAnswer = (index: number) => {
+  const handleAnswer = async (index: number) => {
     if (selectedAnswer !== null) return;
     
     setSelectedAnswer(index);
@@ -309,6 +321,8 @@ const TriviaGames: React.FC = () => {
     
     if (index === question.correctIndex) {
       setScore(prev => prev + 1);
+      // Award points for correct answer
+      await awardPoints('TRIVIA_CORRECT');
     }
   };
 
@@ -328,6 +342,11 @@ const TriviaGames: React.FC = () => {
         // Update high score
         if (!highScores[difficulty] || finalScore > highScores[difficulty]!) {
           setHighScores(prev => ({ ...prev, [difficulty]: finalScore }));
+          
+          // Save to localStorage for guest users
+          const localScores = JSON.parse(localStorage.getItem('serenity_game_scores') || '{}');
+          localScores[difficulty] = finalScore;
+          localStorage.setItem('serenity_game_scores', JSON.stringify(localScores));
           
           // Check if next level should be unlocked
           if (finalScore >= Math.ceil(QUESTIONS_PER_GAME * 0.7)) {

@@ -17,6 +17,7 @@ import AuthModal from "./components/AuthModal";
 import NotificationCenter from "./components/NotificationCenter";
 import NotificationPermissionPrompt from "./components/NotificationPermissionPrompt";
 import ProgressDashboard from "./components/ProgressDashboard";
+import PointsDisplay from "./components/PointsDisplay";
 import type { UserContext, Emotion } from "./types";
 import { useMoodStorage, useJournalStorage } from "./hooks/useStorage";
 import "./styles/index.css";
@@ -580,6 +581,7 @@ const AppContent: React.FC = () => {
                 onNavigateToJournal={navigateToJournal}
               />
               <div className="checkin-sidebar">
+                <PointsDisplay />
                 <TodayWidget onNavigateToPlanner={() => setActiveTab('planner')} />
                 <TipsPanel userContext={userContext} currentMood={selectedMood} />
               </div>
