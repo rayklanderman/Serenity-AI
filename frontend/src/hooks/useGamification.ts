@@ -80,13 +80,14 @@ export const useGamification = () => {
             .from('user_gamification')
             .select('*')
             .eq('user_id', user.id)
-            .single();
+            .maybeSingle(); // Use maybeSingle() to handle no rows gracefully
           
           if (data && !error) {
             setState(data.state_data as GamificationState);
           }
+          // If no data found (new user), keep default state - will be saved on first action
         } catch (err) {
-          console.log('[Gamification] No existing data, using defaults');
+          console.log('[Gamification] Error loading, using defaults:', err);
         }
       } else {
         // Load from localStorage for guest users
