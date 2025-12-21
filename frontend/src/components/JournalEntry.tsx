@@ -383,15 +383,16 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             style={{
-              background: 'var(--card-bg)',
-              borderRadius: 'var(--radius-xl)',
+              background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
+              borderRadius: '1.5rem',
               padding: '2rem',
               maxWidth: '500px',
               width: '90%',
               maxHeight: '80vh',
               overflow: 'auto',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-              border: '1px solid var(--border)'
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(139, 92, 246, 0.3)',
+              border: '2px solid rgba(139, 92, 246, 0.4)',
+              position: 'relative'
             }}
           >
             <button 
@@ -401,12 +402,18 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
                 position: 'absolute',
                 top: '1rem',
                 right: '1rem',
-                background: 'transparent',
+                background: 'rgba(255, 255, 255, 0.1)',
                 border: 'none',
                 fontSize: '1.5rem',
                 cursor: 'pointer',
-                color: 'var(--text-secondary)',
-                padding: '0.5rem'
+                color: 'rgba(255, 255, 255, 0.7)',
+                padding: '0.5rem',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
             >
               ×
@@ -417,14 +424,14 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
               <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                style={{ fontSize: '3rem', marginBottom: '0.5rem' }}
+                style={{ fontSize: '3.5rem', marginBottom: '0.5rem' }}
               >
                 🧠
               </motion.div>
-              <h2 style={{ margin: '0 0 0.25rem', color: 'var(--text-primary)' }}>
+              <h2 style={{ margin: '0 0 0.25rem', color: '#ffffff', fontSize: '1.5rem' }}>
                 {getModalTitle()}
               </h2>
-              <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+              <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem' }}>
                 SerenityAI's response to your journal
               </p>
               
@@ -440,7 +447,7 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
                     padding: '0.5rem 1rem',
                     background: 'linear-gradient(135deg, #22c55e, #16a34a)',
                     color: 'white',
-                    borderRadius: 'var(--radius-full)',
+                    borderRadius: '9999px',
                     fontWeight: 600,
                     fontSize: '0.9rem',
                     marginTop: '1rem'
@@ -453,16 +460,18 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
             
             {/* AI Message */}
             <div style={{
-              background: 'linear-gradient(135deg, rgba(129, 140, 248, 0.1), rgba(167, 139, 250, 0.08))',
-              borderRadius: 'var(--radius-lg)',
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '1rem',
               padding: '1.5rem',
-              marginBottom: '1.5rem'
+              marginBottom: '1.5rem',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
             }}>
               <p style={{ 
                 margin: 0, 
-                lineHeight: 1.7, 
-                color: 'var(--text-primary)',
-                fontSize: '1.05rem'
+                lineHeight: 1.8, 
+                color: '#ffffff',
+                fontSize: '1.1rem',
+                fontWeight: 400
               }}>
                 {latestInsight}
               </p>
@@ -470,9 +479,19 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
             
             {/* Action Button */}
             <button 
-              className="primary-btn" 
               onClick={() => setShowAIModal(false)}
-              style={{ width: '100%' }}
+              style={{ 
+                width: '100%',
+                padding: '1rem 1.5rem',
+                background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.75rem',
+                fontSize: '1rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'transform 0.2s, box-shadow 0.2s'
+              }}
             >
               ✨ Continue Journaling
             </button>
