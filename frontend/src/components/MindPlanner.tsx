@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSwipeable } from 'react-swipeable';
 import { usePlannerStorage } from '../hooks/usePlannerStorage';
 import { usePushNotifications } from '../hooks/usePushNotifications';
+import { useGamification } from '../hooks/useGamification';
 import { useAuth } from '../contexts/AuthContext';
 import type { UserContext } from '../types';
 
@@ -45,6 +46,7 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
   const { user } = useAuth();
   const { savePlan, getCurrentPlan, loading: storageLoading } = usePlannerStorage();
   const { scheduleActivityReminder, requestPermission, permission, isSupported } = usePushNotifications();
+  const { awardPoints } = useGamification();
   const [remindersEnabled, setRemindersEnabled] = useState(true);
   
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
@@ -327,7 +329,13 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
     
     const newPlan = [...plan];
     const activity = newPlan[dayIndex].activities[actIndex];
+    const wasCompleted = activity.completed;
     activity.completed = !activity.completed;
+    
+    // Award points when marking as complete (not when un-completing)
+    if (!wasCompleted && activity.completed) {
+      await awardPoints('ACTIVITY_COMPLETE');
+    }
     
     setPlan(newPlan);
     

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useJac } from '../hooks/useJac';
 import { useJournalStorage } from '../hooks/useStorage';
+import { useGamification } from '../hooks/useGamification';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { UserContext, Emotion } from '../types';
 import type { JournalEntryData } from '../App';
@@ -17,8 +18,10 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [latestInsight, setLatestInsight] = useState<string | null>(null);
+  const [pointsEarned, setPointsEarned] = useState<number | null>(null);
   const { spawn, loading, data } = useJac('JournalSaver');
   const { saveEntry } = useJournalStorage();
+  const { awardPoints } = useGamification();
 
   const handleSave = async () => {
     if (!content.trim()) return;
@@ -54,9 +57,16 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
         mood_change: result.mood_change || 0
       });
       
+      // Award points for journal entry
+      const reward = await awardPoints('JOURNAL_ENTRY');
+      setPointsEarned(reward.pointsEarned);
+      
       setContent('');
       setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
+      setTimeout(() => {
+        setSaveSuccess(false);
+        setPointsEarned(null);
+      }, 4000);
     }
   };
 
@@ -128,8 +138,20 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
             className="save-success"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
+            style={{
+              background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+              color: 'white',
+              padding: '0.75rem 1rem',
+              borderRadius: 'var(--radius-full)',
+              marginTop: '0.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+            }}
           >
-            ✅ Entry saved! Check the AI insight on the right →
+            ✅ Entry saved! 
+            {pointsEarned && <span>🎉 +{pointsEarned} points!</span>}
+            Check the AI insight on the right →
           </motion.div>
         )}
       </motion.div>

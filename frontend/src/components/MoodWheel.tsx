@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useJac } from '../hooks/useJac';
 import { useMoodStorage } from '../hooks/useStorage';
+import { useGamification } from '../hooks/useGamification';
 import { useSpeechToText, useTextToSpeech } from '../hooks/useSpeech';
 import { motion } from 'framer-motion';
 import type { UserContext, Emotion } from '../types';
@@ -78,8 +79,10 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
   const [showAIModal, setShowAIModal] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<MoodEntry | null>(null);
+  const [pointsEarned, setPointsEarned] = useState<number | null>(null);
   const { spawn, loading, data } = useJac('MoodLogger');
   const { saveMood } = useMoodStorage();
+  const { awardPoints, currentStreak, newBadge, dismissBadge } = useGamification();
   
   // Voice features
   const { isListening, transcript, startListening, stopListening, resetTranscript, isSupported: sttSupported } = useSpeechToText();
@@ -127,6 +130,10 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
       };
       onMoodLogged?.(entry);
       
+      // Award points for mood check-in
+      const reward = await awardPoints('MOOD_CHECKIN');
+      setPointsEarned(reward.pointsEarned);
+      
       // Save to Supabase for logged-in users
       saveMood({
         emotion: selectedMood.name,
@@ -137,6 +144,9 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
       });
       
       setNote('');
+      
+      // Clear points display after 3 seconds
+      setTimeout(() => setPointsEarned(null), 3000);
     }
   };
 
@@ -240,7 +250,7 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
           )}
         </button>
 
-        {/* Success message */}
+        {/* Success message with points */}
         {showSuccess && !data && (
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
@@ -248,6 +258,56 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
             className="success-toast"
           >
             ✓ Mood logged! Generating insight...
+          </motion.div>
+        )}
+        
+        {/* Points Earned Toast */}
+        {pointsEarned && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="points-toast"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.75rem 1rem',
+              background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+              color: 'white',
+              borderRadius: 'var(--radius-full)',
+              marginTop: '0.5rem',
+              fontWeight: 600,
+            }}
+          >
+            <span>🎉</span>
+            <span>+{pointsEarned} points!</span>
+            {currentStreak > 1 && <span style={{ opacity: 0.9 }}>🔥 {currentStreak} day streak!</span>}
+          </motion.div>
+        )}
+
+        {/* Badge Notification */}
+        {newBadge && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            onClick={dismissBadge}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.75rem 1rem',
+              background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+              color: 'white',
+              borderRadius: 'var(--radius-full)',
+              marginTop: '0.5rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            <span style={{ fontSize: '1.25rem' }}>{newBadge.icon}</span>
+            <span>Badge Unlocked: {newBadge.name}!</span>
           </motion.div>
         )}
 
