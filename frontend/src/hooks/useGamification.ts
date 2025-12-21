@@ -102,9 +102,24 @@ export const useGamification = () => {
     loadState();
   }, [user]);
 
-  // Save state helper
+  // Listen for gamification updates from other components
+  useEffect(() => {
+    const handleGamificationUpdate = (event: CustomEvent<GamificationState>) => {
+      setState(event.detail);
+    };
+
+    window.addEventListener('gamification-update', handleGamificationUpdate as EventListener);
+    return () => {
+      window.removeEventListener('gamification-update', handleGamificationUpdate as EventListener);
+    };
+  }, []);
+
+  // Save state helper - also dispatches event for cross-component sync
   const saveState = useCallback(async (newState: GamificationState) => {
     setState(newState);
+    
+    // Dispatch custom event so other components using this hook get updated
+    window.dispatchEvent(new CustomEvent('gamification-update', { detail: newState }));
     
     if (user && isSupabaseConfigured()) {
       // Save to Supabase
