@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStorage } from '../hooks/usePlannerStorage';
 import { useGamification } from '../hooks/useGamification';
+import { useNotifications } from '../hooks/useNotifications';
 import { Brain, Zap, Trophy, Star, RefreshCw, ArrowRight, Lock } from 'lucide-react';
 
 type Difficulty = 'easy' | 'medium' | 'hard';
@@ -231,6 +232,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 const TriviaGames: React.FC = () => {
   const { saveScore, getHighScore } = useGameStorage();
   const { awardPoints } = useGamification();
+  const { notify } = useNotifications();
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -352,8 +354,16 @@ const TriviaGames: React.FC = () => {
           if (finalScore >= Math.ceil(QUESTIONS_PER_GAME * 0.7)) {
             if (difficulty === 'easy') {
               setUnlockedLevels(prev => ({ ...prev, medium: true }));
+              notify.achievement(
+                '🔓 Level Unlocked!',
+                'Medium difficulty is now available!'
+              );
             } else if (difficulty === 'medium') {
               setUnlockedLevels(prev => ({ ...prev, hard: true }));
+              notify.achievement(
+                '🔓 Level Unlocked!',
+                'Hard difficulty is now available!'
+              );
             }
           }
         }

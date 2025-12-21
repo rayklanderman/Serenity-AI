@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useJac } from '../hooks/useJac';
 import { useJournalStorage } from '../hooks/useStorage';
-import { useGamification } from '../hooks/useGamification';
+import { useGamification, BADGES } from '../hooks/useGamification';
+import { useNotifications } from '../hooks/useNotifications';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { UserContext, Emotion } from '../types';
 import type { JournalEntryData } from '../App';
@@ -22,6 +23,7 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
   const { spawn, loading, data } = useJac('JournalSaver');
   const { saveEntry } = useJournalStorage();
   const { awardPoints } = useGamification();
+  const { notify } = useNotifications();
 
   const handleSave = async () => {
     if (!content.trim()) return;
@@ -60,6 +62,23 @@ const JournalEntry: React.FC<JournalEntryProps> = ({ userContext, currentMood, e
       // Award points for journal entry
       const reward = await awardPoints('JOURNAL_ENTRY');
       setPointsEarned(reward.pointsEarned);
+      
+      // Create in-app notification
+      notify.achievement(
+        `+${reward.pointsEarned} Points Earned!`,
+        'Great job journaling your thoughts!'
+      );
+      
+      // Notify for new badges
+      if (reward.newBadges.length > 0) {
+        const badge = BADGES.find(b => b.id === reward.newBadges[0]);
+        if (badge) {
+          notify.achievement(
+            `${badge.icon} Badge Unlocked!`,
+            `You earned the "${badge.name}" badge!`
+          );
+        }
+      }
       
       setContent('');
       setSaveSuccess(true);

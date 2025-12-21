@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useJac } from '../hooks/useJac';
 import { useMoodStorage } from '../hooks/useStorage';
-import { useGamification } from '../hooks/useGamification';
+import { useGamification, BADGES } from '../hooks/useGamification';
+import { useNotifications } from '../hooks/useNotifications';
 import { useSpeechToText, useTextToSpeech } from '../hooks/useSpeech';
 import { motion } from 'framer-motion';
 import type { UserContext, Emotion } from '../types';
@@ -83,6 +84,7 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
   const { spawn, loading, data } = useJac('MoodLogger');
   const { saveMood } = useMoodStorage();
   const { awardPoints, currentStreak, newBadge, dismissBadge } = useGamification();
+  const { notify } = useNotifications();
   
   // Voice features
   const { isListening, transcript, startListening, stopListening, resetTranscript, isSupported: sttSupported } = useSpeechToText();
@@ -133,6 +135,23 @@ const MoodWheel: React.FC<MoodWheelProps> = ({
       // Award points for mood check-in
       const reward = await awardPoints('MOOD_CHECKIN');
       setPointsEarned(reward.pointsEarned);
+      
+      // Create in-app notification for points
+      notify.achievement(
+        `+${reward.pointsEarned} Points Earned!`,
+        `Great job checking in! ${reward.currentStreak > 1 ? `🔥 ${reward.currentStreak}-day streak!` : 'Keep it up!'}`
+      );
+      
+      // Notify for new badges
+      if (reward.newBadges.length > 0) {
+        const badge = BADGES.find(b => b.id === reward.newBadges[0]);
+        if (badge) {
+          notify.achievement(
+            `${badge.icon} Badge Unlocked!`,
+            `You earned the "${badge.name}" badge!`
+          );
+        }
+      }
       
       // Save to Supabase for logged-in users
       saveMood({
