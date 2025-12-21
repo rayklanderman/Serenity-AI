@@ -134,11 +134,14 @@ export const useGameStorage = () => {
     try {
       const { data, error } = await supabase
         .from('game_scores')
-        .insert({
+        .upsert({
           user_id: user.id,
           game_type: gameType,
           score,
-          total_questions: totalQuestions
+          max_score: totalQuestions,
+          played_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,game_type'
         })
         .select()
         .single();
