@@ -1,7 +1,7 @@
 // Service Worker for SerenityAI PWA
-const CACHE_NAME = 'serenity-ai-v2'; // Bumped version to force update
-const STATIC_CACHE = 'serenity-ai-static-v2';
-const DYNAMIC_CACHE = 'serenity-ai-dynamic-v2';
+const CACHE_NAME = 'serenity-ai-v3'; // Bumped version to force update
+const STATIC_CACHE = 'serenity-ai-static-v3';
+const DYNAMIC_CACHE = 'serenity-ai-dynamic-v3';
 
 // Files to cache immediately - ONLY exact paths (no wildcards!)
 // Note: JS/CSS assets have hashed names, so we cache them dynamically instead
