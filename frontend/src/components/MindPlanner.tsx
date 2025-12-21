@@ -109,6 +109,34 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
     return dayIndex === todayIndex;
   };
 
+  // Check if an activity's time has elapsed (only for today)
+  const isActivityElapsed = (dayIndex: number, activityTime: string): boolean => {
+    // Only check for today's activities
+    if (!isToday(dayIndex)) return false;
+    
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    
+    // Parse activity time (e.g., "7:00 AM", "12:30 PM", "6:00 PM")
+    const timeParts = activityTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!timeParts) return false;
+    
+    let actHour = parseInt(timeParts[1]);
+    const actMinute = parseInt(timeParts[2]);
+    const period = timeParts[3].toUpperCase();
+    
+    // Convert to 24-hour format
+    if (period === 'PM' && actHour !== 12) actHour += 12;
+    if (period === 'AM' && actHour === 12) actHour = 0;
+    
+    // Check if current time is past activity time
+    if (currentHour > actHour) return true;
+    if (currentHour === actHour && currentMinute > actMinute) return true;
+    
+    return false;
+  };
+
   // Get current time for display
   const getCurrentTimeInfo = (): string => {
     const now = new Date();
@@ -636,7 +664,10 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
                   
                   <div className="day-activities">
                     {plan[currentDayIndex].activities.map((act, j) => (
-                      <div key={act.id} className={`activity-item editable ${act.completed ? 'completed' : ''}`}>
+                      <div 
+                        key={act.id} 
+                        className={`activity-item editable ${act.completed ? 'completed' : ''} ${!act.completed && isActivityElapsed(currentDayIndex, act.time) ? 'elapsed' : ''}`}
+                      >
                         <button 
                           className={`activity-checkbox ${act.completed ? 'checked' : ''}`}
                           onClick={() => toggleActivityComplete(currentDayIndex, j)}

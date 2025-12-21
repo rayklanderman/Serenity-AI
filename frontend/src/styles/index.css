@@ -4706,6 +4706,43 @@ header, footer {
   opacity: 0.5;
 }
 
+/* Elapsed Activity Styling - time has passed but not completed */
+.activity-item.elapsed {
+  opacity: 0.5;
+  background: rgba(100, 100, 100, 0.15);
+  border-left: 3px solid var(--gray-400);
+}
+
+.activity-item.elapsed .act-name {
+  color: var(--gray-500);
+  font-style: italic;
+}
+
+.activity-item.elapsed .act-time {
+  color: var(--gray-400);
+  text-decoration: line-through;
+}
+
+.activity-item.elapsed .act-icon {
+  opacity: 0.4;
+  filter: grayscale(80%);
+}
+
+.activity-item.elapsed::after {
+  content: "Missed";
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.65rem;
+  color: var(--gray-500);
+  background: rgba(0, 0, 0, 0.1);
+  padding: 0.15rem 0.4rem;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 /* Activity Item Layout Update */
 .activity-item {
   display: flex;
