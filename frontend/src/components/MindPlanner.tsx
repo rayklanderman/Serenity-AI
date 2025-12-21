@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSwipeable } from 'react-swipeable';
 import { usePlannerStorage } from '../hooks/usePlannerStorage';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useAuth } from '../contexts/AuthContext';
 import type { UserContext } from '../types';
 
@@ -43,6 +44,8 @@ interface DayPlan {
 const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) => {
   const { user } = useAuth();
   const { savePlan, getCurrentPlan, loading: storageLoading } = usePlannerStorage();
+  const { scheduleActivityReminder, requestPermission, permission, isSupported } = usePushNotifications();
+  const [remindersEnabled, setRemindersEnabled] = useState(true);
   
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [schedule, setSchedule] = useState<Schedule>({
@@ -182,6 +185,29 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
     setPlan(generatedPlan);
     setStep(4);
     setLoading(false);
+
+    // Schedule notifications for today's activities
+    if (remindersEnabled && isSupported) {
+      const todayDayOfWeek = new Date().getDay();
+      const todayIndex = todayDayOfWeek === 0 ? 6 : todayDayOfWeek - 1;
+      const todayPlan = generatedPlan[todayIndex];
+      
+      // Request permission if not granted
+      if (permission !== 'granted') {
+        const granted = await requestPermission();
+        if (!granted) {
+          console.log('Notification permission denied');
+        }
+      }
+      
+      // Schedule reminders for today's activities (5 minutes before each)
+      if (permission === 'granted' || permission === 'default') {
+        for (const activity of todayPlan.activities) {
+          await scheduleActivityReminder(activity.activity, activity.time, 5);
+        }
+        console.log(`Scheduled ${todayPlan.activities.length} activity reminders for today`);
+      }
+    }
 
     // Save to Supabase
     if (user) {
@@ -503,6 +529,26 @@ const MindPlanner: React.FC<MindPlannerProps> = ({ userContext: _userContext }) 
               </div>
             ))}
           </div>
+
+          {/* Reminders Toggle */}
+          {isSupported && (
+            <div className="reminders-toggle" style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={remindersEnabled}
+                  onChange={(e) => setRemindersEnabled(e.target.checked)}
+                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                />
+                <span>🔔 Enable activity reminders (5 min before each activity)</span>
+              </label>
+              {permission === 'denied' && (
+                <p style={{ color: 'var(--error)', fontSize: '0.8rem', marginTop: '0.25rem' }}>
+                  ⚠️ Notifications are blocked. Enable in browser settings.
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="step-buttons">
             <button className="secondary-btn" onClick={() => setStep(2)}>← Back</button>
