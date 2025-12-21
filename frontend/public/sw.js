@@ -1,15 +1,16 @@
 // Service Worker for SerenityAI PWA
-const CACHE_NAME = 'serenity-ai-v1';
-const STATIC_CACHE = 'serenity-ai-static-v1';
-const DYNAMIC_CACHE = 'serenity-ai-dynamic-v1';
+const CACHE_NAME = 'serenity-ai-v2'; // Bumped version to force update
+const STATIC_CACHE = 'serenity-ai-static-v2';
+const DYNAMIC_CACHE = 'serenity-ai-dynamic-v2';
 
-// Files to cache immediately
+// Files to cache immediately - ONLY exact paths (no wildcards!)
+// Note: JS/CSS assets have hashed names, so we cache them dynamically instead
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/assets/index-*.css',
-  '/assets/index-*.js'
+  '/logo.png',
+  '/favicon.png'
 ];
 
 // Install event - cache static assets
