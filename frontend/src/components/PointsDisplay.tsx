@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useGamification, BADGES, Badge } from '../hooks/useGamification';
+import { useGamification } from '../hooks/useGamification';
 
 interface PointsDisplayProps {
   compact?: boolean;
