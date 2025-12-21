@@ -35,11 +35,23 @@
   <body>
     <div id="root"></div>
     
-    <!-- EMERGENCY SW CLEANUP - Runs BEFORE React to fix blank pages on mobile -->
+    <!-- EMERGENCY SW CLEANUP - Runs BEFORE React to fix blank pages on mobile/PWA -->
     <script>
       // Nuclear option: Clear all service workers and caches
       // This fixes devices stuck with old broken SWs
+      // For installed PWAs: forces a reload to get fresh content
       (async function() {
+        const CLEANUP_KEY = 'serenity_sw_cleanup_v4';
+        const alreadyCleaned = sessionStorage.getItem(CLEANUP_KEY);
+        
+        // Skip if we already cleaned in this session (prevents infinite loops)
+        if (alreadyCleaned) {
+          console.log('SW cleanup already done this session');
+          return;
+        }
+        
+        let cleanedSomething = false;
+        
         try {
           // Unregister ALL service workers
           if ('serviceWorker' in navigator) {
@@ -47,6 +59,7 @@
             for (const registration of registrations) {
               await registration.unregister();
               console.log('SW unregistered:', registration.scope);
+              cleanedSomething = true;
             }
           }
           
@@ -56,10 +69,27 @@
             for (const cacheName of cacheNames) {
               await caches.delete(cacheName);
               console.log('Cache deleted:', cacheName);
+              cleanedSomething = true;
             }
           }
           
+          // Mark as cleaned in this session
+          sessionStorage.setItem(CLEANUP_KEY, 'true');
+          
           console.log('SW cleanup complete - app will work without SW');
+          
+          // If we cleaned something and this is an installed PWA, force reload
+          // This ensures the PWA gets fresh content
+          if (cleanedSomething) {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
+              || window.navigator.standalone 
+              || document.referrer.includes('android-app://');
+            
+            if (isStandalone) {
+              console.log('Installed PWA detected - forcing reload for fresh content');
+              window.location.reload();
+            }
+          }
         } catch (error) {
           console.error('SW cleanup failed:', error);
         }
