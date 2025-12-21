@@ -231,7 +231,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 
 const TriviaGames: React.FC = () => {
   const { saveScore, getHighScore } = useGameStorage();
-  const { awardPoints } = useGamification();
+  const { awardPoints, points, level } = useGamification();
   const { notify } = useNotifications();
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -409,9 +409,26 @@ const TriviaGames: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div className="trivia-header">
-          <h2>🧠 Mind Games</h2>
-          <p className="subtitle">Test your wellness knowledge</p>
+        <div className="trivia-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <h2>🧠 Mind Games</h2>
+            <p className="subtitle">Test your wellness knowledge</p>
+          </div>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem',
+            padding: '0.5rem 0.75rem', 
+            background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+            borderRadius: 'var(--radius-full)',
+            color: 'white',
+            fontWeight: 600,
+            fontSize: '0.85rem'
+          }}>
+            <Trophy size={16} />
+            <span>{points} pts</span>
+            <span style={{ opacity: 0.7 }}>• Lv {level}</span>
+          </div>
         </div>
 
         <div className="level-selection">
