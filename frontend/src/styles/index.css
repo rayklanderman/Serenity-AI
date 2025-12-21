@@ -6708,21 +6708,31 @@ html, body {
   .mood-grid {
     width: 100% !important;
     max-width: 100% !important;
-    display: flex !important;
-    flex-wrap: wrap !important;
-    justify-content: center !important;
-    gap: 0.5rem !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.75rem !important;
     padding: 0.5rem !important;
   }
   
   .mood-bubble {
-    width: 60px !important;
-    height: 60px !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 90px !important;
+    padding: 0.75rem 0.5rem !important;
     flex-shrink: 0 !important;
   }
   
+  .mood-emoji {
+    font-size: 2rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+  
+  .mood-label,
   .mood-bubble-text {
-    font-size: 0.65rem !important;
+    font-size: 0.7rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
   
   .tips-panel,
